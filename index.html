@@ -54,9 +54,7 @@
 			el: '#app',
 			data: {
 				message: 'Hello World!',
-				data: [
-					''
-				]
+				data: []
 			},
 			methods: {
 				refreshData() {
@@ -64,6 +62,7 @@
 						url: "/json",
 						dataType: "json",
 						success: function(data) {
+							// change object to array for vue
 							container = []
 							for(var key in data)
 							{
@@ -74,6 +73,8 @@
 									"prefix": data[key].sitePrefix
 								})
 							}
+							
+							// update data
 							this.data = container;
 						}.bind(this),
 						error: function(data) {
