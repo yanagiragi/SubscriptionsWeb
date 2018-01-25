@@ -28,11 +28,21 @@
 		<ul class="collapsible collection" data-collapsible="accordion">
 			<li v-for="item in data">
 				<div class="collapsible-header">
-					<i class="material-icons">filter_drama</i> {{ item['type: '] }}
-					<span class="badge new">{{ item.type }}</span>
+					<i class="material-icons">filter_drama</i> {{ item.type }}
+					<!-- Why this crash click on collapsible?
+
+					<span class="badge new">{{ item.container.length }}</span>
+					-->
+					<span class="badge new">
+						
+					</span>
 				</div>
 				<div class="collapsible-body">
-					<span>{{ item.container }}</span>
+					<div class="collection">
+						<a v-for="col in item.container" v-bind:href="item.prefix + col.href" target="_blank" class="collection-item">
+							{{ col.title }}
+						</a>
+					</div>
 				</div>
 			</li>
 		</ul>
