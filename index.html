@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>Ragi Subscription</title>
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<!-- Compiled and minified CSS -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+
+<body>
+	<div id="app">
+		<nav>
+			<div class="nav-wrapper">
+				<a href="#" class="brand-logo">
+					<div style="padding-left: 10px">Ragi Subscription</div>
+				</a>
+				<ul id="nav-mobile" class="right hide-on-med-and-down">
+					<li><a href="sass.html">Sass</a></li>
+					<li><a href="badges.html">Components</a></li>
+					<li><a href="collapsible.html">JavaScript</a></li>
+				</ul>
+			</div>
+		</nav>
+
+		<ul class="collapsible collection" data-collapsible="accordion">
+			<li v-for="item in data">
+				<div class="collapsible-header">
+					<i class="material-icons">filter_drama</i> {{ item['type: '] }}
+					<span class="badge new">{{ item.type }}</span>
+				</div>
+				<div class="collapsible-body">
+					<span>{{ item.container }}</span>
+				</div>
+			</li>
+		</ul>
+	</div>
+
+	<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+	<!-- Compiled and minified JavaScript -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.0.1/vue.min.js"></script>
+	<script>
+		new Vue({
+			el: '#app',
+			data: {
+				message: 'Hello World!',
+				data: [
+					'a',
+					'b',
+					'c'
+				]
+			},
+			methods: {
+				refreshData() {
+					$.ajax({
+						url: "/json",
+						dataType: "json",
+						success: function(data) {
+							this.data = data;
+						}.bind(this),
+						error: function(data) {
+							console.log("load json error!");
+						}
+					});
+				}
+			},
+			mounted: function() {
+				console.log('ready')
+				this.refreshData();
+			}
+		})
+
+		$(document).ready(function() {
+			$('.collapsible').collapsible();
+		})
+	</script>
+</body>
+
+</html>
