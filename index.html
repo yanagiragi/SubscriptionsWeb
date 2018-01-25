@@ -26,20 +26,17 @@
 		</nav>
 
 		<ul class="collapsible collection" data-collapsible="accordion">
-			<li v-for="item in data">
+			<li v-for="site in data">
 				<div class="collapsible-header">
-					<i class="material-icons">filter_drama</i> {{ item.type }}
-					<!-- Why this crash click on collapsible?
-
-					<span class="badge new">{{ item.container.length }}</span>
-					-->
+					<i class="material-icons">filter_drama</i> {{ site.site }}
+					<!-- No site.data.length? -->
 					<span class="badge new">
-						
+						{{ site.dataLength }}
 					</span>
 				</div>
 				<div class="collapsible-body">
 					<div class="collection">
-						<a v-for="col in item.container" v-bind:href="item.prefix + col.href" target="_blank" class="collection-item">
+						<a v-for="col in site.data" v-bind:href="site.prefix + col.href" target="_blank" class="collection-item">
 							{{ col.title }}
 						</a>
 					</div>
@@ -58,9 +55,7 @@
 			data: {
 				message: 'Hello World!',
 				data: [
-					'a',
-					'b',
-					'c'
+					''
 				]
 			},
 			methods: {
@@ -69,7 +64,17 @@
 						url: "/json",
 						dataType: "json",
 						success: function(data) {
-							this.data = data;
+							container = []
+							for(var key in data)
+							{
+								container.push({
+									"site": key,
+									"data": data[key].containerList,
+									"dataLength": data[key].containerList.length,
+									"prefix": data[key].sitePrefix
+								})
+							}
+							this.data = container;
 						}.bind(this),
 						error: function(data) {
 							console.log("load json error!");
