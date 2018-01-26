@@ -13,6 +13,7 @@
 			line-height: 24px;
 			padding: 0 0.5rem;
 		}
+
 		.modal {
 			max-height: 75%;
 		}
@@ -36,7 +37,7 @@
 			<div class="modal-content">
 				<h4 style="text-alignment: center"><a v-bind:href="currentPreviewHref" target="_blank">{{ currentPreviewTitle }}</a></h4>
 				<div style="padding-top: 50px">
-					<img v-bind:src="currentPreviewImg"/ style="width: 100%">
+					<img v-bind:src="currentPreviewImg" / style="width: 100%">
 				</div>
 			</div>
 			<div class="modal-footer">
@@ -59,10 +60,16 @@
 								{{ col.title }}
 							</a>
 
-							<!-- Modal Trigger -->
+							<!-- Read Button -->
 							<div style="float: right; display: initial">
+								<a class="waves-effect waves-light btn btn-small modal-trigger" href="#" v-bind:value="col.title" v-on:click="read">read</a>
+							</div>
+
+							<!-- Modal Trigger -->
+							<div style="float: right; display: initial; padding-right: 10px">
 								<a v-if="col.img != 'NULL'" class="waves-effect waves-light btn btn-small modal-trigger" href="#modal1" v-bind:value="site.prefix + '|' + col.img" v-on:click="previewImg">preview</a>
 							</div>
+
 						</li>
 					</ul>
 				</div>
@@ -93,9 +100,17 @@
 							// change object to array for vue
 							container = []
 							for (var key in data) {
+								// only show unNoticed
+								var unNoticed = data[key].containerList.reduce((acc, container) => {
+									if (container.isNoticed)
+										return acc
+									else
+										return acc.concat(container)
+								}, [])
 								container.push({
 									"site": key,
-									"data": data[key].containerList,
+									"data": unNoticed,
+									"rawData": data[key].containerList,
 									"prefix": data[key].sitePrefix
 								})
 							}
@@ -107,6 +122,19 @@
 							console.log("load json error!");
 						}
 					});
+				},
+				read: function(event) {
+					var title = event.target.value;
+					$.ajax({ 
+						url: '/read=' + title,
+						success: function(data) {
+							console.log('succuess')
+							this.refreshData()
+						}.bind(this),
+						error: function(data) {
+							console.log('failed to read ' + title)
+						}
+					})
 				},
 				previewImg: function(event) {
 					var raw = event.target.value.split('|')
@@ -132,37 +160,38 @@
 					this.currentPreviewImg = raw[1];
 					this.currentPreviewTitle = event.target.parentNode.parentNode.children[0].parentNode.children[0].innerHTML
 					this.currentPreviewHref = event.target.parentNode.parentNode.children[0].parentNode.children[0].getAttribute('href')
-				}/*,
-				base64Encode: function(str) {
-					var CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-					var out = "",
-						i = 0,
-						len = str.length,
-						c1, c2, c3;
-					while (i < len) {
-						c1 = str.charCodeAt(i++) & 0xff;
-						if (i == len) {
-							out += CHARS.charAt(c1 >> 2);
-							out += CHARS.charAt((c1 & 0x3) << 4);
-							out += "==";
-							break;
-						}
-						c2 = str.charCodeAt(i++);
-						if (i == len) {
-							out += CHARS.charAt(c1 >> 2);
-							out += CHARS.charAt(((c1 & 0x3) << 4) | ((c2 & 0xF0) >> 4));
-							out += CHARS.charAt((c2 & 0xF) << 2);
-							out += "=";
-							break;
-						}
-						c3 = str.charCodeAt(i++);
-						out += CHARS.charAt(c1 >> 2);
-						out += CHARS.charAt(((c1 & 0x3) << 4) | ((c2 & 0xF0) >> 4));
-						out += CHARS.charAt(((c2 & 0xF) << 2) | ((c3 & 0xC0) >> 6));
-						out += CHARS.charAt(c3 & 0x3F);
-					}
-					return out;
-				}*/
+				}
+				/*,
+								base64Encode: function(str) {
+									var CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+									var out = "",
+										i = 0,
+										len = str.length,
+										c1, c2, c3;
+									while (i < len) {
+										c1 = str.charCodeAt(i++) & 0xff;
+										if (i == len) {
+											out += CHARS.charAt(c1 >> 2);
+											out += CHARS.charAt((c1 & 0x3) << 4);
+											out += "==";
+											break;
+										}
+										c2 = str.charCodeAt(i++);
+										if (i == len) {
+											out += CHARS.charAt(c1 >> 2);
+											out += CHARS.charAt(((c1 & 0x3) << 4) | ((c2 & 0xF0) >> 4));
+											out += CHARS.charAt((c2 & 0xF) << 2);
+											out += "=";
+											break;
+										}
+										c3 = str.charCodeAt(i++);
+										out += CHARS.charAt(c1 >> 2);
+										out += CHARS.charAt(((c1 & 0x3) << 4) | ((c2 & 0xF0) >> 4));
+										out += CHARS.charAt(((c2 & 0xF) << 2) | ((c3 & 0xC0) >> 6));
+										out += CHARS.charAt(c3 & 0x3F);
+									}
+									return out;
+								}*/
 			},
 			mounted: function() {
 				console.log('ready')
