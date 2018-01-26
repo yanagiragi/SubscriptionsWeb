@@ -8,6 +8,26 @@ app.listen(3000)
 
 const filepath = './container.json'
 
+function read(data, str)
+{
+	console.log("read " + str );
+	for(var site in data){
+		for(thread in data[site].containerList){
+			if(data[site].containerList[thread].title == str){
+				if(data[site].containerList[thread].isNoticed){
+					return true;
+				}
+				data[site].containerList[thread].isNoticed = true;
+				console.log('Saving container to file...')
+				fs.writeFileSync(filepath, JSON.stringify(data, null, 4), 'utf8');
+				console.log('Saving Done.')
+				return true;
+			}
+		}
+	}
+	return false
+}
+
 app.get('/', (req, res) => {
 	data = fs.readFileSync('index.html', 'utf8')
 	res.send(data)
@@ -16,4 +36,10 @@ app.get('/', (req, res) => {
 app.get('/json', (req, res) => {
 	data = JSON.parse(fs.readFileSync(filepath, 'utf8'))
 	res.send(data)
+})
+
+app.get(/read=(.*)/, (req, res) => {
+	data = JSON.parse(fs.readFileSync(filepath, 'utf8'))
+	result = read(data, req.params[0])
+	res.send(result)
 })
