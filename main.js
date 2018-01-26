@@ -1,7 +1,9 @@
 const express = require('express')
+const cors = require('cors')
 const fs = require('fs')
 
 const app = express()
+app.use(cors())
 app.listen(3000)
 
 const filepath = './container.json'

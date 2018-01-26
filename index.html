@@ -7,7 +7,18 @@
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<!-- Compiled and minified CSS -->
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+	<style>
+		.btn-small {
+			height: 24px;
+			line-height: 24px;
+			padding: 0 0.5rem;
+		}
+		.modal {
+			max-height: 75%;
+		}
+	</style>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="referrer" content="no-referrer">
 </head>
 
 <body>
@@ -25,6 +36,19 @@
 			</div>
 		</nav>
 
+		<!-- Modal Structure -->
+		<div id="modal1" class="modal">
+			<div class="modal-content">
+				<h4 style="text-alignment: center"><a v-bind:href="currentPreviewHref" target="_blank">{{ currentPreviewTitle }}</a></h4>
+				<div style="padding-top: 50px">
+					<img v-bind:src="currentPreviewImg"/ style="width: 100%">
+				</div>
+			</div>
+			<div class="modal-footer">
+				<a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat">Agree</a>
+			</div>
+		</div>
+
 		<ul class="collapsible collection" data-collapsible="accordion">
 			<li v-for="site in data">
 				<div class="collapsible-header">
@@ -34,11 +58,18 @@
 					</span>
 				</div>
 				<div class="collapsible-body">
-					<div class="collection">
-						<a v-for="col in site.data" v-bind:href="site.prefix + col.href" target="_blank" class="collection-item">
-							{{ col.title }}
-						</a>
-					</div>
+					<ul class="collection">
+						<li v-for="col in site.data">
+							<a v-bind:href="site.prefix + col.href" target="_blank" class="collection-item" style="width: 70%; display: inline-block">
+								{{ col.title }}
+							</a>
+
+							<!-- Modal Trigger -->
+							<div style="float: right; display: initial">
+								<a v-if="col.img != 'NULL'" class="waves-effect waves-light btn btn-small modal-trigger" href="#modal1" v-bind:value="site.prefix + '|' + col.img" v-on:click="previewImg">preview</a>
+							</div>
+						</li>
+					</ul>
 				</div>
 			</li>
 		</ul>
@@ -53,7 +84,10 @@
 			el: '#app',
 			data: {
 				message: 'Hello World!',
-				data: []
+				data: [],
+				currentPreviewTitle: "",
+				currentPreviewHref: "",
+				currentPreviewImg: ""
 			},
 			methods: {
 				refreshData() {
@@ -63,15 +97,14 @@
 						success: function(data) {
 							// change object to array for vue
 							container = []
-							for(var key in data)
-							{
+							for (var key in data) {
 								container.push({
 									"site": key,
 									"data": data[key].containerList,
 									"prefix": data[key].sitePrefix
 								})
 							}
-							
+
 							// update data
 							this.data = container;
 						}.bind(this),
@@ -79,7 +112,62 @@
 							console.log("load json error!");
 						}
 					});
-				}
+				},
+				previewImg: function(event) {
+					var raw = event.target.value.split('|')
+					// custom referer ajax
+					/*$.ajax({
+						url: raw[1],
+						dataType: "blob",
+						headers: {
+							"Referer": raw[0]
+						},
+						success: function(data) {
+							console.log('succuess')
+							var encodedData = 'data:image/jpeg;base64,' + this.base64Encode(data)
+							this.currentPreviewImg = encodedData;
+						}.bind(this),
+						error: function(data) {
+							console.log('failed to load ' + raw[1])
+							//this.currentPreviewImg = raw[1];
+							this.currentPreviewImg = raw[1];
+							console.log(this.currentPreviewImg)
+						}
+					})*/
+					this.currentPreviewImg = raw[1];
+					this.currentPreviewTitle = event.target.parentNode.parentNode.children[0].parentNode.children[0].innerHTML
+					this.currentPreviewHref = event.target.parentNode.parentNode.children[0].parentNode.children[0].getAttribute('href')
+				}/*,
+				base64Encode: function(str) {
+					var CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+					var out = "",
+						i = 0,
+						len = str.length,
+						c1, c2, c3;
+					while (i < len) {
+						c1 = str.charCodeAt(i++) & 0xff;
+						if (i == len) {
+							out += CHARS.charAt(c1 >> 2);
+							out += CHARS.charAt((c1 & 0x3) << 4);
+							out += "==";
+							break;
+						}
+						c2 = str.charCodeAt(i++);
+						if (i == len) {
+							out += CHARS.charAt(c1 >> 2);
+							out += CHARS.charAt(((c1 & 0x3) << 4) | ((c2 & 0xF0) >> 4));
+							out += CHARS.charAt((c2 & 0xF) << 2);
+							out += "=";
+							break;
+						}
+						c3 = str.charCodeAt(i++);
+						out += CHARS.charAt(c1 >> 2);
+						out += CHARS.charAt(((c1 & 0x3) << 4) | ((c2 & 0xF0) >> 4));
+						out += CHARS.charAt(((c2 & 0xF) << 2) | ((c3 & 0xC0) >> 6));
+						out += CHARS.charAt(c3 & 0x3F);
+					}
+					return out;
+				}*/
 			},
 			mounted: function() {
 				console.log('ready')
@@ -89,6 +177,7 @@
 
 		$(document).ready(function() {
 			$('.collapsible').collapsible();
+			$('.modal').modal();
 		})
 	</script>
 </body>
