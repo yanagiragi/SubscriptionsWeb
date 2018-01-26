@@ -126,7 +126,7 @@
 				read: function(event) {
 					var title = event.target.value;
 					$.ajax({ 
-						url: '/read=' + title,
+						url: '/read/' + encodeURI(title),
 						success: function(data) {
 							console.log('succuess')
 							this.refreshData()
@@ -195,7 +195,8 @@
 			},
 			mounted: function() {
 				console.log('ready')
-				this.refreshData();
+				this.refreshData()
+				setInterval( this.refreshData, 1000 * 60 * 5)
 			}
 		})
 

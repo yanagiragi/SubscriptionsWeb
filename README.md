@@ -1,10 +1,8 @@
 todo
 
-fetch 圖片 hover 預覽第一張圖
+標題有 ? 的特殊符號好像route 會抓不到?
 
-已讀功能
-
-自動更新
+批量已讀功能
 
 配布highlight
 

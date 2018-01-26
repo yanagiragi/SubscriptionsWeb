@@ -6,7 +6,7 @@ const app = express()
 app.use(cors())
 app.listen(3000)
 
-const filepath = './container.json'
+const filepath = '../RagiSubscription/src/container.json'
 
 function read(data, str)
 {
@@ -38,8 +38,8 @@ app.get('/json', (req, res) => {
 	res.send(data)
 })
 
-app.get(/read=(.*)/, (req, res) => {
+app.get('/read/:title', (req, res) => {
 	data = JSON.parse(fs.readFileSync(filepath, 'utf8'))
-	result = read(data, req.params[0])
+	result = read(data, req.params.title)
 	res.send(result)
 })
