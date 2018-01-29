@@ -12,10 +12,30 @@
 			height: 24px;
 			line-height: 24px;
 			padding: 0 0.5rem;
+			/*font-size: 0.8em;*/
+			text-transform: capitalize;
+		}
+
+		.btn-small-ex {
+			height: 21px;
+			line-height: 24px;
+			padding: 0 0.5rem;
+			margin-left: 0.5em;
+			font-size: 0.8em;
+			text-transform: capitalize;
 		}
 
 		.modal {
 			max-height: 75%;
+		}
+
+		.display-none {
+			display: none;
+		}
+
+		.yrBtn {
+			display: inline-block;
+			width: 70px;
 		}
 	</style>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -26,7 +46,7 @@
 	<div id="app">
 		<nav>
 			<div class="nav-wrapper">
-				<a href="#" class="brand-logo">
+				<a href="#" class="brand-logo" v-on:click="refreshData">
 					<div style="padding-left: 10px">Ragi Subscription</div>
 				</a>
 			</div>
@@ -35,7 +55,10 @@
 		<!-- Modal Structure -->
 		<div id="modal1" class="modal">
 			<div class="modal-content">
-				<h4 style="text-alignment: center"><a v-bind:href="currentPreviewHref" target="_blank">{{ currentPreviewTitle }}</a></h4>
+				<h4 style="text-alignment: center">
+					a v-bind:href="currentPreviewHref" target="_blank"> {{ currentPreviewTitle }}
+					</a>
+				</h4>
 				<div style="padding-top: 50px">
 					<img v-bind:src="currentPreviewImg" / style="width: 100%">
 				</div>
@@ -47,28 +70,33 @@
 
 		<ul class="collapsible collection" data-collapsible="accordion">
 			<li v-for="site in data">
-				<div class="collapsible-header">
-					<i class="material-icons">filter_drama</i> {{ site.site }}
+				<div class="collapsible-header" v-on:click="expandSite">
+					<i class="material-icons">filter_drama</i>
+					{{ site.site }}
 					<span class="badge new">
 						{{ site.data.length }}
+					</span>
+					<span class="btn btn-small-ex display-none" v-on:click="readAll">
+						read all
 					</span>
 				</div>
 				<div class="collapsible-body">
 					<ul class="collection">
 						<li v-for="col in site.data">
-							<a v-bind:href="site.prefix + col.href" target="_blank" class="collection-item" style="width: 70%; display: inline-block">
-								{{ col.title }}
-							</a>
 
 							<!-- Read Button -->
-							<div style="float: right; display: initial">
+							<div class="yrBtn">
 								<a class="waves-effect waves-light btn btn-small modal-trigger" href="#" v-bind:value="col.title" v-on:click="read">read</a>
 							</div>
 
 							<!-- Modal Trigger -->
-							<div style="float: right; display: initial; padding-right: 10px">
+							<div class="yrBtn">
 								<a v-if="col.img != 'NULL'" class="waves-effect waves-light btn btn-small modal-trigger" href="#modal1" v-bind:value="site.prefix + '|' + col.img" v-on:click="previewImg">preview</a>
 							</div>
+
+							<a v-bind:href="site.prefix + col.href" target="_blank" class="collection-item" style="margin-left: 30px; display: inline-block">
+								{{ col.title }}
+							</a>
 
 						</li>
 					</ul>
@@ -93,6 +121,7 @@
 			},
 			methods: {
 				refreshData() {
+					console.log('refreshing data...');
 					$.ajax({
 						url: "/json",
 						dataType: "json",
@@ -124,9 +153,9 @@
 					});
 				},
 				read: function(event) {
-					var title = event.target.value;
-					$.ajax({ 
-						url: '/read/' + encodeURI(title),
+					title = event.target.value.trim();
+					$.ajax({
+						url: '/read/' + encodeURIComponent(title),
 						success: function(data) {
 							console.log('succuess')
 							this.refreshData()
@@ -141,7 +170,7 @@
 					// custom referer ajax
 					/*$.ajax({
 						url: raw[1],
-						dataType: "blob",
+						IdataType: "blob",
 						headers: {
 							"Referer": raw[0]
 						},
@@ -158,8 +187,26 @@
 						}
 					})*/
 					this.currentPreviewImg = raw[1];
-					this.currentPreviewTitle = event.target.parentNode.parentNode.children[0].parentNode.children[0].innerHTML
+					this.currentPreviewTitle = event.target.parentNode.parentNode.children[0].parentNode.children[2].innerHTML
 					this.currentPreviewHref = event.target.parentNode.parentNode.children[0].parentNode.children[0].getAttribute('href')
+				},
+				expandSite: function(event) {
+					console.log('expand site')
+					var span = event.target.children[2]
+					if (span.classList.contains('display-none')) {
+						span.classList.remove('display-none')
+					} else {
+						span.classList.add('display-none')
+					}
+				},
+				readAll: function(event) {
+					event.stopPropagation()
+					console.log('readAll')
+					var list = event.target.parentNode.parentNode.children[1].children[0].children
+					list = Array.prototype.slice.call(list)
+					list.forEach((element) => {
+						this.read({ target: { value: element.children[2].innerHTML }})
+					})
 				}
 				/*,
 								base64Encode: function(str) {
@@ -196,7 +243,7 @@
 			mounted: function() {
 				console.log('ready')
 				this.refreshData()
-				setInterval( this.refreshData, 1000 * 60 * 5)
+				setInterval(this.refreshData, 1000 * 60 * 5)
 			}
 		})
 
