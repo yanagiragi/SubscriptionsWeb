@@ -4,6 +4,7 @@ const fs = require('fs')
 
 const app = express()
 app.use(cors())
+app.use(express.static('public'));
 app.listen(3000)
 
 const filepath = '../RagiSubscription/data/container.json'
