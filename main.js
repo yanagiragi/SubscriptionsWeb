@@ -11,22 +11,24 @@ const filepath = '../RagiSubscription/data/container.json'
 
 function read(data, str)
 {
-	console.log("read " + str );
+	console.log("read <" + str + ">");
+	var flag = false
 	for(var site in data){
 		for(thread in data[site].containerList){
 			if(data[site].containerList[thread].title == str){
-				if(data[site].containerList[thread].isNoticed){
-					return true;
+				if(!(data[site].containerList[thread].isNoticed)){
+					// force search all every time
+					// because there are always duplicated title all the time
+					data[site].containerList[thread].isNoticed = true;
+					flag = true;
 				}
-				data[site].containerList[thread].isNoticed = true;
-				console.log('Saving container to file...')
-				fs.writeFileSync(filepath, JSON.stringify(data, null, 4), 'utf8');
-				console.log('Saving Done.')
-				return true;
 			}
 		}
 	}
-	return false
+	console.log('Saving container to file...')
+	fs.writeFileSync(filepath, JSON.stringify(data, null, 4), 'utf8');
+	console.log('Saving Done.')
+	return flag
 }
 
 app.get('/', (req, res) => {
