@@ -57,7 +57,8 @@
 		<div id="modal1" class="modal">
 			<div class="modal-content">
 				<h4 style="text-alignment: center">
-					a v-bind:href="currentPreviewHref" target="_blank"> {{ currentPreviewTitle }}
+					<a v-bind:href="currentPreviewHref" target="_blank"> 
+						{{ currentPreviewTitle }}
 					</a>
 				</h4>
 				<div style="padding-top: 50px">
@@ -189,7 +190,7 @@
 					})*/
 					this.currentPreviewImg = raw[1];
 					this.currentPreviewTitle = event.target.parentNode.parentNode.children[0].parentNode.children[2].innerHTML
-					this.currentPreviewHref = event.target.parentNode.parentNode.children[0].parentNode.children[0].getAttribute('href')
+					this.currentPreviewHref = event.target.parentNode.parentNode.children[0].parentNode.children[2].getAttribute('href')
 				},
 				expandSite: function(event) {
 					console.log('expand site')
