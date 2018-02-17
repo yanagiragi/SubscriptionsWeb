@@ -50,6 +50,12 @@
 				<a href="#" class="brand-logo" v-on:click="refreshData">
 					<div style="padding-left: 10px">Ragi Subscription</div>
 				</a>
+				<ul id="nav-mobile" class="right hide-on-med-and-down">
+					<!-- Why value not works? -->
+			        <li><a href="#" name="showUnNoticedOnly" v-on:click="toggleMode">UnNoticed Only</a></li>
+	                <li><a href="#" name="showUnNoticedAll" v-on:click="toggleMode">UnNoticed All</a></li>
+                    <li><a href="#" name="showAll" v-on:click="toggleMode">History</a></li>
+                </ul>
 			</div>
 		</nav>
 
@@ -119,7 +125,8 @@
 				data: [],
 				currentPreviewTitle: "",
 				currentPreviewHref: "",
-				currentPreviewImg: ""
+				currentPreviewImg: "",
+				mode : 'showUnNoticedOnly'
 			},
 			methods: {
 				refreshData() {
@@ -138,12 +145,34 @@
 									else
 										return acc.concat(container)
 								}, [])
-								container.push({
-									"site": key,
-									"data": unNoticed,
-									"rawData": data[key].containerList,
-									"prefix": data[key].sitePrefix
-								})
+
+								if(this.mode == 'showUnNoticedOnly'){
+									if(unNoticed.length > 0){
+										container.push({
+											"site": key,
+											"data": unNoticed,
+											"rawData": data[key].containerList,
+											"prefix": data[key].sitePrefix
+										})
+									}
+								}
+								else if(this.mode == 'showUnNoticedAll'){
+									container.push({
+										"site": key,
+										"data": unNoticed,
+										"rawData": data[key].containerList,
+										"prefix": data[key].sitePrefix
+									})
+
+								}
+								else if(this.mode == 'showAll'){
+									container.push({
+										"site": key,
+										"data": data[key].containerList,
+										"rawData": data[key].containerList,
+										"prefix": data[key].sitePrefix
+									})
+								}
 							}
 
 							// update data
@@ -155,6 +184,11 @@
 					});
 				},
 				read: function(event) {
+					if(event.stopPropagation) event.stopPropagation()
+					// no Read When showAll
+					if(this.mode == 'showAll')
+						return
+
 					title = event.target.value.trim();
 					$.ajax({
 						url: '/read/' + encodeURIComponent(title),
@@ -209,6 +243,22 @@
 					list.forEach((element) => {
 						this.read({ target: { value: element.children[2].innerHTML }})
 					})
+				},
+				toggleMode: function(event) {
+					event.stopPropagation()
+					this.mode = event.target.name
+					console.log('toggle Mode to ' + this.mode)
+					this.refreshData()
+				},
+				getParameterByName : function(name, url) {
+					// https://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
+					if (!url) url = window.location.href;
+					name = name.replace(/[\[\]]/g, "\\$&")
+					var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)")
+					results = regex.exec(url)
+					if (!results) return null
+					if (!results[2]) return ''
+					return decodeURIComponent(results[2].replace(/\+/g, " "))
 				}
 				/*,
 								base64Encode: function(str) {
