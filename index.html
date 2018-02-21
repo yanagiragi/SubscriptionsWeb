@@ -176,7 +176,7 @@
 							}
 
 							// update data
-							this.data = container;
+							this.data = container.sort((a,b) => { return a.site > b.site });
 						}.bind(this),
 						error: function(data) {
 							console.log("load json error!");
