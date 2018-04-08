@@ -84,7 +84,7 @@
 					<span class="badge new">
 						{{ site.data.length }}
 					</span>
-					<span class="btn btn-small-ex display-none" v-on:click="readAll">
+					<span class="btn btn-small-ex display-none" v-on:click="readAll" v-bind:value="site.site">
 						read all
 					</span>
 				</div>
@@ -206,7 +206,7 @@
 					// custom referer ajax
 					/*$.ajax({
 						url: raw[1],
-						IdataType: "blob",
+						dataType: "blob",
 						headers: {
 							"Referer": raw[0]
 						},
@@ -237,12 +237,22 @@
 				},
 				readAll: function(event) {
 					event.stopPropagation()
-					console.log('readAll')
-					var list = event.target.parentNode.parentNode.children[1].children[0].children
+					siteType = event.target.value					
+					console.log('readAll: ' + siteType)					
+					$.ajax({
+						url: '/readAll/' + siteType,
+						success : function(data){
+							console.log(data)
+							this.refreshData()
+						}.bind(this),
+						error: (data) => console.log(data)
+					})
+
+					/*var list = event.target.parentNode.parentNode.children[1].children[0].children
 					list = Array.prototype.slice.call(list)
 					list.forEach((element) => {
 						this.read({ target: { value: element.children[2].innerHTML }})
-					})
+					})*/
 				},
 				toggleMode: function(event) {
 					event.stopPropagation()
