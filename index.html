@@ -77,34 +77,34 @@
 		</div>
 
 		<ul class="collapsible collection" data-collapsible="accordion">
-			<li v-for="site in data">
-				<div class="collapsible-header" v-on:click="expandSite">
+			<li v-for="(container, containerIndex) in data.container">
+				<div v-if="container.unNoticedCount > 0" class="collapsible-header" v-on:click="expandSite">
 					<i class="material-icons">filter_drama</i>
-					{{ site.site }}
+					{{ data.types[container.typeId] }} [ {{ container.nickname }} ]
 					<span class="badge new">
-						{{ site.data.length }}
+						{{ container.unNoticedCount }}
 					</span>
-					<span class="btn btn-small-ex display-none" v-on:click="readAll" v-bind:value="site.site">
+					<span class="btn btn-small-ex display-none" v-on:click="readAll" v-bind:value="containerIndex">
 						read all
 					</span>
 				</div>
-				<div class="collapsible-body">
+
+				<div v-if="container.unNoticedCount > 0" class="collapsible-body">
 					<ul class="collection">
-						<li v-for="col in site.data">
+						<li v-for="(entry, entryIndex) in container.list">
+							<div v-if="entry.isNoticed == false">
+								<div class="yrBtn">
+									<a class="waves-effect waves-light btn btn-small modal-trigger" href="#" v-bind:value="containerIndex + '|' + entryIndex" v-on:click="read">read</a>
+								</div>
 
-							<!-- Read Button -->
-							<div class="yrBtn">
-								<a class="waves-effect waves-light btn btn-small modal-trigger" href="#" v-bind:value="col.title" v-on:click="read">read</a>
+								<div class="yrBtn">
+									<a v-if="entry.img != 'NULL'" class="waves-effect waves-light btn btn-small modal-trigger" href="#modal1" v-bind:value="containerIndex + '|' + entryIndex" v-on:click="previewImg">preview</a>
+								</div>
+
+								<a v-bind:href="entry.href" target="_blank" class="collection-item" style="margin-left: 30px; display: inline-block">
+									{{ entry.title }}
+								</a>
 							</div>
-
-							<!-- Modal Trigger -->
-							<div class="yrBtn">
-								<a v-if="col.img != 'NULL'" class="waves-effect waves-light btn btn-small modal-trigger" href="#modal1" v-bind:value="site.prefix + '|' + col.img" v-on:click="previewImg">preview</a>
-							</div>
-
-							<a v-bind:href="site.prefix + col.href" target="_blank" class="collection-item" style="margin-left: 30px; display: inline-block">
-								{{ col.title }}
-							</a>
 
 						</li>
 					</ul>
@@ -135,48 +135,24 @@
 						url: "/json",
 						dataType: "json",
 						success: function(data) {
-							// change object to array for vue
-							container = []
-							for (var key in data) {
-								// only show unNoticed
-								var unNoticed = data[key].containerList.reduce((acc, container) => {
-									if (container.isNoticed)
+							
+							for (var key in data.container) {
+								// count unNoticed
+								var unNoticed = data.container[key].list.reduce((acc, entry) => {
+									if (entry.isNoticed)
 										return acc
 									else
-										return acc.concat(container)
+										return acc.concat(entry)
 								}, [])
-
-								if(this.mode == 'showUnNoticedOnly'){
-									if(unNoticed.length > 0){
-										container.push({
-											"site": key,
-											"data": unNoticed,
-											"rawData": data[key].containerList,
-											"prefix": data[key].sitePrefix
-										})
-									}
-								}
-								else if(this.mode == 'showUnNoticedAll'){
-									container.push({
-										"site": key,
-										"data": unNoticed,
-										"rawData": data[key].containerList,
-										"prefix": data[key].sitePrefix
-									})
-
-								}
-								else if(this.mode == 'showAll'){
-									container.push({
-										"site": key,
-										"data": data[key].containerList,
-										"rawData": data[key].containerList,
-										"prefix": data[key].sitePrefix
-									})
-								}
+								data.container[key].unNoticedCount = unNoticed.length
 							}
 
-							// update data
-							this.data = container.sort((a,b) => { return a.site > b.site });
+							// Sort data.container
+							// data.container = data.container.sort((a,b) => { return data.types[a.typeId] > data.types[b.typeId] });
+
+							// Update data
+							this.data = data
+
 						}.bind(this),
 						error: function(data) {
 							console.log("load json error!");
@@ -184,14 +160,16 @@
 					});
 				},
 				read: function(event) {
-					if(event.stopPropagation) event.stopPropagation()
+					if(event.stopPropagation) 
+						event.stopPropagation()
+					
 					// no Read When showAll
 					if(this.mode == 'showAll')
 						return
 
-					title = event.target.value.trim();
+					idx = event.target.value;
 					$.ajax({
-						url: '/read/' + encodeURIComponent(title),
+						url: '/read/' + encodeURIComponent(idx),
 						success: function(data) {
 							console.log('succuess')
 							this.refreshData()
@@ -202,29 +180,10 @@
 					})
 				},
 				previewImg: function(event) {
-					var raw = event.target.value.split('|')
-					// custom referer ajax
-					/*$.ajax({
-						url: raw[1],
-						dataType: "blob",
-						headers: {
-							"Referer": raw[0]
-						},
-						success: function(data) {
-							console.log('succuess')
-							var encodedData = 'data:image/jpeg;base64,' + this.base64Encode(data)
-							this.currentPreviewImg = encodedData;
-						}.bind(this),
-						error: function(data) {
-							console.log('failed to load ' + raw[1])
-							//this.currentPreviewImg = raw[1];
-							this.currentPreviewImg = raw[1];
-							console.log(this.currentPreviewImg)
-						}
-					})*/
-					this.currentPreviewImg = raw[1];
-					this.currentPreviewTitle = event.target.parentNode.parentNode.children[0].parentNode.children[2].innerHTML
-					this.currentPreviewHref = event.target.parentNode.parentNode.children[0].parentNode.children[2].getAttribute('href')
+					[containerIndex, entryIndex] = event.target.value.split('|')
+					this.currentPreviewImg = this.data.container[containerIndex].list[entryIndex].img;
+					this.currentPreviewTitle = this.data.container[containerIndex].list[entryIndex].title
+					this.currentPreviewHref = this.data.container[containerIndex].list[entryIndex].href
 				},
 				expandSite: function(event) {
 					console.log('expand site')
@@ -237,12 +196,18 @@
 				},
 				readAll: function(event) {
 					event.stopPropagation()
-					siteType = event.target.value					
-					console.log('readAll: ' + siteType)					
+					containerIndex = event.target.value
+
+					var unNoticedIndexes = this.data.container[containerIndex].list.reduce((acc, element, idx) => {
+						if(element.isNoticed == false){
+							return `${acc}&${idx}`//acc.concat(idx)
+						}
+						return acc
+					}, `${containerIndex}`)
+
 					$.ajax({
-						url: '/readAll/' + siteType,
+						url: '/readAll/' + unNoticedIndexes,
 						success : function(data){
-							console.log(data)
 							this.refreshData()
 						}.bind(this),
 						error: (data) => console.log(data)
@@ -270,37 +235,7 @@
 					if (!results[2]) return ''
 					return decodeURIComponent(results[2].replace(/\+/g, " "))
 				}
-				/*,
-								base64Encode: function(str) {
-									var CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-									var out = "",
-										i = 0,
-										len = str.length,
-										c1, c2, c3;
-									while (i < len) {
-										c1 = str.charCodeAt(i++) & 0xff;
-										if (i == len) {
-											out += CHARS.charAt(c1 >> 2);
-											out += CHARS.charAt((c1 & 0x3) << 4);
-											out += "==";
-											break;
-										}
-										c2 = str.charCodeAt(i++);
-										if (i == len) {
-											out += CHARS.charAt(c1 >> 2);
-											out += CHARS.charAt(((c1 & 0x3) << 4) | ((c2 & 0xF0) >> 4));
-											out += CHARS.charAt((c2 & 0xF) << 2);
-											out += "=";
-											break;
-										}
-										c3 = str.charCodeAt(i++);
-										out += CHARS.charAt(c1 >> 2);
-										out += CHARS.charAt(((c1 & 0x3) << 4) | ((c2 & 0xF0) >> 4));
-										out += CHARS.charAt(((c2 & 0xF) << 2) | ((c3 & 0xC0) >> 6));
-										out += CHARS.charAt(c3 & 0x3F);
-									}
-									return out;
-								}*/
+				
 			},
 			mounted: function() {
 				console.log('ready')
