@@ -3,18 +3,33 @@
 
 <head>
 	<meta charset="UTF-8">
-	<title>Ragi Subscription</title>
+	<title>Ragi Subscriptions</title>
 	<link rel="shortcut icon" href="icon.ico" />
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<!-- Compiled and minified CSS -->
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
 	<style>
+
+		body {
+			background-color: #313338;			
+		}
+
 		.btn-small {
 			height: 24px;
 			line-height: 24px;
 			padding: 0 0.5rem;
 			/*font-size: 0.8em;*/
 			text-transform: capitalize;
+		}
+
+		.collection .collection-item
+		{
+			background-color: #313338;
+		}
+
+		.collapsible-header
+		{
+			background-color: #d5d5d5;
 		}
 
 		.btn-small-ex {
@@ -46,14 +61,14 @@
 <body>
 	<div id="app">
 		<nav>
-			<div class="nav-wrapper">
+			<div class="nav-wrapper blue-grey lighten-1">
 				<a href="#" class="brand-logo" v-on:click="refreshData">
 					<div style="padding-left: 10px">Ragi Subscription</div>
 				</a>
 				<ul id="nav-mobile" class="right hide-on-med-and-down">
 					<!-- Why value not works? -->
 			        <li><a href="#" name="showUnNoticedOnly" v-on:click="toggleMode">UnNoticed Only</a></li>
-	                <li><a href="#" name="showUnNoticedAll" v-on:click="toggleMode">UnNoticed All</a></li>
+	                <!--<li><a href="#" name="showUnNoticedAll" v-on:click="toggleMode">UnNoticed All</a></li>-->
                     <li><a href="#" name="showAll" v-on:click="toggleMode">History</a></li>
                 </ul>
 			</div>
@@ -76,29 +91,59 @@
 			</div>
 		</div>
 
-		<ul class="collapsible collection" data-collapsible="accordion">
-			<li v-for="(container, containerIndex) in data.container">
+		<!-- if mode is "showAll" -->
+		<ul v-if="mode == 'showAll'" class="collapsible collection" data-collapsible="accordion">
+			<li v-for="container in data.container">				
+				<div class="collapsible-header" v-on:click="expandSite">
+					<i class="material-icons">filter_drama</i>
+					{{ data.types[container.typeId] }} [ {{ container.nickname }} ]
+					<span class="badge new">
+						{{ container.list.length }}
+					</span>
+				</div>
+
+				<div class="collapsible-body">
+					<ul class="collection">
+						<li v-for="entry in container.list">
+							<div>
+								<div class="yrBtn">
+									<a v-if="entry.img != 'NULL'" class="waves-effect waves-light btn btn-small modal-trigger" href="#modal1" v-bind:value="container.id + '|' + entry.id" v-on:click="previewImg">preview</a>
+								</div>
+								<a v-bind:href="entry.href" target="_blank" class="collection-item" style="margin-left: 30px; display: inline-block">
+									{{ entry.title }}
+								</a>
+							</div>
+
+						</li>
+					</ul>
+				</div>
+			</li>
+		</ul>
+
+		<!-- if mode is "showUnNoticedOnly" (Default) -->
+		<ul v-if="mode == 'showUnNoticedOnly'" class="collapsible collection" data-collapsible="accordion">
+			<li v-for="container in data.container">				
 				<div v-if="container.unNoticedCount > 0" class="collapsible-header" v-on:click="expandSite">
 					<i class="material-icons">filter_drama</i>
 					{{ data.types[container.typeId] }} [ {{ container.nickname }} ]
 					<span class="badge new">
 						{{ container.unNoticedCount }}
 					</span>
-					<span class="btn btn-small-ex display-none" v-on:click="readAll" v-bind:value="containerIndex">
+					<span class="btn btn-small-ex display-none" v-on:click="readAll" v-bind:value="container.id">
 						read all
 					</span>
 				</div>
 
 				<div v-if="container.unNoticedCount > 0" class="collapsible-body">
 					<ul class="collection">
-						<li v-for="(entry, entryIndex) in container.list">
+						<li v-for="entry in container.list">
 							<div v-if="entry.isNoticed == false">
 								<div class="yrBtn">
-									<a class="waves-effect waves-light btn btn-small modal-trigger" href="#" v-bind:value="containerIndex + '|' + entryIndex" v-on:click="read">read</a>
+									<a class="waves-effect waves-light btn btn-small modal-trigger" href="#" v-bind:value="container.id + '|' + entry.id" v-on:click="read">read</a>
 								</div>
 
 								<div class="yrBtn">
-									<a v-if="entry.img != 'NULL'" class="waves-effect waves-light btn btn-small modal-trigger" href="#modal1" v-bind:value="containerIndex + '|' + entryIndex" v-on:click="previewImg">preview</a>
+									<a v-if="entry.img != 'NULL'" class="waves-effect waves-light btn btn-small modal-trigger" href="#modal1" v-bind:value="container.id + '|' + entry.id" v-on:click="previewImg">preview</a>
 								</div>
 
 								<a v-bind:href="entry.href" target="_blank" class="collection-item" style="margin-left: 30px; display: inline-block">
@@ -121,7 +166,6 @@
 		new Vue({
 			el: '#app',
 			data: {
-				message: 'Hello World!',
 				data: [],
 				currentPreviewTitle: "",
 				currentPreviewHref: "",
@@ -134,22 +178,12 @@
 					$.ajax({
 						url: "/json",
 						dataType: "json",
-						success: function(data) {
-							
+						success: function(data) {							
 							for (var key in data.container) {
-								// count unNoticed
-								var unNoticed = data.container[key].list.reduce((acc, entry) => {
-									if (entry.isNoticed)
-										return acc
-									else
-										return acc.concat(entry)
-								}, [])
-								data.container[key].unNoticedCount = unNoticed.length
+								data.container[key].unNoticedCount = data.container[key].list.filter( element => element.isNoticed == false ).length
 							}
-
-							// Sort data.container
-							// data.container = data.container.sort((a,b) => { return data.types[a.typeId] > data.types[b.typeId] });
-
+							// not sort since we use data.container[key].list[i].id as index to access data
+							
 							// Update data
 							this.data = data
 
@@ -163,9 +197,14 @@
 					if(event.stopPropagation) 
 						event.stopPropagation()
 					
-					// no Read When showAll
+					// no Read When showAll, just for insurance since read btn has not render in showAll mode
 					if(this.mode == 'showAll')
 						return
+
+					[containerIndex, entryIndex] = event.target.value.split('|')
+
+					this.data.container[containerIndex].list[entryIndex].isNoticed = true
+					this.data.container[containerIndex].unNoticedCount--
 
 					idx = event.target.value;
 					$.ajax({
@@ -180,62 +219,61 @@
 					})
 				},
 				previewImg: function(event) {
+					
 					[containerIndex, entryIndex] = event.target.value.split('|')
+					
 					this.currentPreviewImg = this.data.container[containerIndex].list[entryIndex].img;
 					this.currentPreviewTitle = this.data.container[containerIndex].list[entryIndex].title
 					this.currentPreviewHref = this.data.container[containerIndex].list[entryIndex].href
+
 				},
 				expandSite: function(event) {
+					
 					console.log('expand site')
-					var span = event.target.children[2]
-					if (span.classList.contains('display-none')) {
-						span.classList.remove('display-none')
-					} else {
-						span.classList.add('display-none')
+
+					if(this.mode == 'showUnNoticedOnly'){
+
+						// get unNoticeCount display badge
+						var span = event.target.children[2]
+						
+						if (span.classList.contains('display-none')) {
+							span.classList.remove('display-none')
+						} 
+						else {
+							span.classList.add('display-none')
+						}
 					}
 				},
 				readAll: function(event) {
+					
 					event.stopPropagation()
+					
 					containerIndex = event.target.value
 
 					var unNoticedIndexes = this.data.container[containerIndex].list.reduce((acc, element, idx) => {
 						if(element.isNoticed == false){
-							return `${acc}&${idx}`//acc.concat(idx)
+							return `${acc}&${idx}`
 						}
 						return acc
 					}, `${containerIndex}`)
 
+					this.data.container[containerIndex].unNoticedCount = 0
+					delete this.data.container[containerIndex].list
+
 					$.ajax({
 						url: '/readAll/' + unNoticedIndexes,
 						success : function(data){
-							this.refreshData()
+							setTimeout(this.refreshData, 1000 * 10)
 						}.bind(this),
 						error: (data) => console.log(data)
 					})
 
-					/*var list = event.target.parentNode.parentNode.children[1].children[0].children
-					list = Array.prototype.slice.call(list)
-					list.forEach((element) => {
-						this.read({ target: { value: element.children[2].innerHTML }})
-					})*/
 				},
 				toggleMode: function(event) {
 					event.stopPropagation()
 					this.mode = event.target.name
 					console.log('toggle Mode to ' + this.mode)
-					this.refreshData()
-				},
-				getParameterByName : function(name, url) {
-					// https://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
-					if (!url) url = window.location.href;
-					name = name.replace(/[\[\]]/g, "\\$&")
-					var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)")
-					results = regex.exec(url)
-					if (!results) return null
-					if (!results[2]) return ''
-					return decodeURIComponent(results[2].replace(/\+/g, " "))
-				}
-				
+				}				
 			},
 			mounted: function() {
 				console.log('ready')
