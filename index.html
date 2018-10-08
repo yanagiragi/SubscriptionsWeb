@@ -184,6 +184,12 @@
 					// use css to tell user now pending...
 					$('#SiteName').css('color', '#aaa')
 
+					// if not, simply the data shall not wait for too long
+					// so don't disable the container
+					if(this.mode === 'showAll'){
+						this.data.container = []
+					}
+
 					$.ajax({
 						url: (this.mode !== 'showAll') ? '/json' : 'jsonAll',
 						dataType: "json", 

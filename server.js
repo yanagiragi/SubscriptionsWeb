@@ -11,17 +11,24 @@ console.log("RagiSubscriptionWeb Start")
 
 const filepath = '../RagiDB/data/container.json'
 
+app.use(function(req, res, next){
+	
+	let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+	console.log(`Request from ${ip}, path = ${req.path}`)
+	next()
+})
+
 app.get('/', (req, res) => {
+
 	data = fs.readFileSync('index.html', 'utf8')
 	res.send(data)
+
 })
 
 app.get('/json', (req, res) => {
-	
 	// RagiDB.GetContainer().then(data => res.send(data))
 	
 	let data = JSON.parse(fs.readFileSync(filepath, 'utf8'))
-
 	data.container.map( e => {
 		e.list = e.list.filter(e2 => !e2.isNoticed)
 	})
@@ -30,7 +37,9 @@ app.get('/json', (req, res) => {
 })
 
 app.get('/jsonAll', (req, res) => {
+
 	res.send(JSON.parse(fs.readFileSync(filepath, 'utf8')))
+
 })
 
 app.get('/readAll/:title', (req, res) => {	
