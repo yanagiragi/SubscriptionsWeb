@@ -180,23 +180,38 @@
 			methods: {
 				refreshData() {
 					console.log('refreshing data...');
+
+					// use css to tell user now pending...
+					$('#SiteName').css('color', '#aaa')
+
 					$.ajax({
-						url: "/json",
-						dataType: "json",
+						url: (this.mode !== 'showAll') ? '/json' : 'jsonAll',
+						dataType: "json", 
 						success: function(data) {							
 							for (var key in data.container) {
-								data.container[key].unNoticedCount = data.container[key].list.filter( element => element.isNoticed == false ).length
+								if(this.mode === 'showAll'){
+									data.container[key].unNoticedCount = 
+										data.container[key].list.filter( element => element.isNoticed == false ).length
+								}
+								else {
+									data.container[key].unNoticedCount = data.container[key].list.length
+								}
 							}
+							
 							// not sort since we use data.container[key].list[i].id as index to access data
 							
 							// Update data
 							this.data = data
-
+					
+							// use css to tell user ajax done
+							$('#SiteName').css('color', '#fff')
 						}.bind(this),
 						error: function(data) {
+							// use css to tell user ajax error
+							$('#SiteName').css('color', '#f00')
 							console.log("load json error!");
 						}
-					});
+					})
 				},
 				read: function(event) {
 					if(event.stopPropagation) 
@@ -278,6 +293,7 @@
 					event.stopPropagation()
 					this.mode = event.target.name
 					console.log('toggle Mode to ' + this.mode)
+					this.refreshData()
 				},
 				checkMobile : function()
 				{
