@@ -50,7 +50,7 @@ app.get('/readAll/:title', (req, res) => {
 	
 	console.log(`readAll ${containerId} : ${entryIds}`)
 	
-	RagiDB.NoticeEntryAll(containerId, entryIds).then(()=> res.send())
+	RagiDB.NoticeEntryAll(containerId, entryIds).then(()=> res.send('DONE'))
 
 })
 
@@ -58,6 +58,6 @@ app.get('/read/:title', (req, res) => {
 	
 	[containerId, entryId] = req.params.title.split('|')
 	
-	RagiDB.NoticeEntry(containerId, entryId).then(()=> res.send())
+	RagiDB.NoticeEntry(containerId, entryId).then(()=> res.send('DONE'))
 
 })
