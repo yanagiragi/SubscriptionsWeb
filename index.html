@@ -274,25 +274,34 @@
 					
 					event.stopPropagation()
 					
-					containerIndex = event.target.value
+					if(this.mode === 'showAll'){
+						; // skip
+					}
+					else{
+						containerIndex = event.target.value
+	
+						let unNoticedIndexes = this.data.container[containerIndex].list.reduce((acc, element) => {
+							if(element.isNoticed == false) {
+								return `${acc}&${element.id}`
+							}
+							return acc
+							}, `${containerIndex}`)
 
-					var unNoticedIndexes = this.data.container[containerIndex].list.reduce((acc, element, idx) => {
-						if(element.isNoticed == false){
-							return `${acc}&${idx}`
-						}
-						return acc
-					}, `${containerIndex}`)
+						this.data.container[containerIndex].unNoticedCount = 0
+						delete this.data.container[containerIndex].list
 
-					this.data.container[containerIndex].unNoticedCount = 0
-					delete this.data.container[containerIndex].list
+						console.log(`readAll: ${unNoticedIndexes}`)
 
-					$.ajax({
-						url: '/readAll/' + unNoticedIndexes,
-						success : function(data){
-							setTimeout(this.refreshData, 1000 * 10)
-						}.bind(this),
-						error: (data) => console.log(data)
-					})
+						// Sometimes bug appears?
+						// Console Shows : xml 解析錯誤
+						$.ajax({
+							url: '/readAll/' + unNoticedIndexes,
+							success : function(data){
+								setTimeout(this.refreshData, 1000 * 10)
+							}.bind(this),
+							error: (data) => console.log(data)
+						})
+					}
 
 				},
 				toggleMode: function(event) {
