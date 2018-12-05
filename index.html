@@ -289,8 +289,7 @@
 					}
 					else{
 						containerIndex = event.target.value
-						console.log(this.data.container[containerIndex])
-	
+						
 						let unNoticedIndexes = this.data.container[containerIndex].list.reduce((acc, element) => {
 							if(element.isNoticed == false) {
 								return `${acc}&${element.id}`
@@ -300,9 +299,7 @@
 
 						this.data.container[containerIndex].unNoticedCount = 0
 						delete this.data.container[containerIndex].list
-						console.log(this.data.container[containerIndex])
-						console.log(`readAll: ${unNoticedIndexes}`)
-
+						
 						$.ajax({
 							url: '/readAll/' + unNoticedIndexes,
 							success : function(data){
