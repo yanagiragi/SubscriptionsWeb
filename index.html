@@ -208,6 +208,13 @@
 							
 							// Update data
 							this.data = data
+
+							let newContainer = {}
+
+							for(let i = 0; i < this.data.container.length; ++i)
+								newContainer[this.data.container[i].id] = this.data.container[i]
+							
+							this.data.container = newContainer
 					
 							// use css to tell user ajax done
 							$('#SiteName').css('color', '#fff')
@@ -282,6 +289,7 @@
 					}
 					else{
 						containerIndex = event.target.value
+						console.log(this.data.container[containerIndex])
 	
 						let unNoticedIndexes = this.data.container[containerIndex].list.reduce((acc, element) => {
 							if(element.isNoticed == false) {
@@ -292,7 +300,7 @@
 
 						this.data.container[containerIndex].unNoticedCount = 0
 						delete this.data.container[containerIndex].list
-
+						console.log(this.data.container[containerIndex])
 						console.log(`readAll: ${unNoticedIndexes}`)
 
 						$.ajax({
