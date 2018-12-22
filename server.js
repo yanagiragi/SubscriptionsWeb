@@ -32,18 +32,28 @@ app.get('/', (req, res) => {
 app.get('/json', (req, res) => {
 	// RagiDB.GetContainer().then(data => res.send(data))
 	
-	let data = JSON.parse(fs.readFileSync(filepath, 'utf8'))
-	data.container.map( e => {
-		e.list = e.list.filter(e2 => !e2.isNoticed)
-	})
-	res.send(data)
+	try{
+		let data = JSON.parse(fs.readFileSync(filepath, 'utf8'))
+		data.container.map( e => {
+			e.list = e.list.filter(e2 => !e2.isNoticed)
+		})
+		res.send(data)
+	} catch(e){
+		res.send(`Error`)
+	}
 	data = null
 })
 
 app.get('/jsonAll', (req, res) => {
 
+	try{
 	let data = JSON.parse(fs.readFileSync(filepath, 'utf8'))
 	res.send(data)
+	}
+	catch(e)
+	{
+		res.send(`Error`)
+	}
 	data = null
 })
 
