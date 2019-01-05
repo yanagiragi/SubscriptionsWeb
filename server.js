@@ -1,15 +1,18 @@
 const express = require('express')
 const cors = require('cors')
 const fs = require('fs')
+const bodyParser = require('body-parser')
 const RagiDB = require('../RagiDB/api.js')
 
 const app = express()
 app.use(cors())
+app.use(bodyParser.json())
 app.use(express.static('public'));
 app.listen(3001)
 console.log("RagiSubscriptionWeb Start")
 
 const filepath = '../RagiDB/data/container.json'
+const datapath = '../RagiSubscription/data/data.json'
 
 app.use(function(req, res, next){
 	
@@ -81,5 +84,52 @@ app.get('/read/:title', (req, res) => {
 	
 	entryId = null
 	containerId = null
+
+})
+
+app.get('/manage', (req, res) => {
+	data = fs.readFileSync('data.html', 'utf8')
+	res.send(data)
+})
+
+app.get('/data', (req, res) => {
+	try{
+		let data = JSON.parse(fs.readFileSync(datapath, 'utf8'))
+		res.send(data)
+	} catch(e){
+		res.send(`Error`)
+	}
+})
+
+app.post('/save', (req, res) => {
+
+	try{
+		let data = req.body
+		
+		let isInvalid = 0
+
+		for(let i = 0; i < data.length; ++i){
+			isInvalid += data[i].sites.reduce((acc, ele) => {
+				if(ele.url === 'NULL' || ele.nickname === 'NULL')
+					return acc.concat(ele)
+				else
+					return acc
+			},[]).length > 0
+		}
+	
+		console.log(`isInvalid = ${isInvalid}`)
+	
+		if(isInvalid){
+			res.send('NO')
+		}
+		else{
+			fs.writeFileSync(datapath, JSON.stringify(data, null, 4), 'utf8')
+			console.log('updated data.json')
+			res.send('OK')
+		}
+	} catch(e){
+		console.log(e)
+		res.send(`Error`)
+	}
 
 })
