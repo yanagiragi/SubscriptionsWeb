@@ -236,8 +236,6 @@
 
 					[containerIndex, entryIndex] = event.target.value.split('|')
 
-					console.log(entryIndex)
-					
 					this.data.container[containerIndex].list.filter(e => e.id == entryIndex)[0].isNoticed = true
 					this.data.container[containerIndex].unNoticedCount--
 
@@ -258,9 +256,11 @@
 					
 					[containerIndex, entryIndex] = event.target.value.split('|')
 					
-					this.currentPreviewImg = this.data.container[containerIndex].list[entryIndex].img;
-					this.currentPreviewTitle = this.data.container[containerIndex].list[entryIndex].title
-					this.currentPreviewHref = this.data.container[containerIndex].list[entryIndex].href
+					let targetData = this.data.container[containerIndex].list.filter(e => e.id == entryIndex)[0]
+
+					this.currentPreviewImg = targetData.img;
+					this.currentPreviewTitle = targetData.title
+					this.currentPreviewHref = targetData.href
 
 				},
 				expandSite: function(event) {
