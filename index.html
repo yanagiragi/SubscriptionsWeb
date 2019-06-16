@@ -133,7 +133,7 @@
 					<span class="badge new">
 						{{ container.unNoticedCount }}
 					</span>
-					<span class="btn btn-small-ex display-none" v-on:click="readAll" v-bind:value="container.id">
+					<span class="btn btn-small-ex" v-on:click="readAll" v-bind:value="container.id">
 						read all
 					</span>
 				</div>
@@ -267,7 +267,7 @@
 					
 					console.log('expand site')
 
-					if(this.mode == 'showUnNoticedOnly'){
+					/*if(this.mode == 'showUnNoticedOnly'){
 
 						// get unNoticeCount display badge
 						var span = event.target.children[2]
@@ -278,7 +278,7 @@
 						else {
 							span.classList.add('display-none')
 						}
-					}
+					}*/
 				},
 				readAll: function(event) {
 					
