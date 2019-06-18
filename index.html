@@ -111,7 +111,13 @@
 						<li v-for="entry in container.list">
 							<div>
 								<div class="yrBtn">
-									<a v-if="entry.img != 'NULL'" class="waves-effect waves-light btn btn-small modal-trigger" href="#modal1" v-bind:value="container.id + '|' + entry.id" v-on:click="previewImg">preview</a>
+									<a	 v-if="entry.img != 'NULL'"
+										class="waves-effect waves-light btn btn-small modal-trigger" 
+										href="#modal1" 
+										v-bind:value="`${container.id}|${entry.id}`" 
+										v-on:click="previewImg">
+										preview
+									</a>
 								</div>
 								<a v-bind:href="entry.href" target="_blank" class="collection-item" style="margin-left: 30px; display: inline-block">
 									{{ entry.title }}
@@ -143,11 +149,22 @@
 						<li v-for="entry in container.list">
 							<div v-if="entry.isNoticed == false">
 								<div class="yrBtn">
-									<a class="waves-effect waves-light btn btn-small modal-trigger" href="#" v-bind:value="container.id + '|' + entry.id" v-on:click="read">read</a>
+									<a 	class="waves-effect waves-light btn btn-small modal-trigger" 
+										href="#" 
+										v-bind:value="container.id + '|' + entry.id" 
+										v-on:click="read">
+										read
+									</a>
 								</div>
 
 								<div class="yrBtn">
-									<a v-if="entry.img != 'NULL'" class="waves-effect waves-light btn btn-small modal-trigger" href="#modal1" v-bind:value="container.id + '|' + entry.id" v-on:click="previewImg">preview</a>
+									<a	v-if="entry.img != 'NULL'"
+										class="waves-effect waves-light btn btn-small modal-trigger" 
+										href="#modal1" 
+										v-bind:value="`${container.id}|${entry.id}`" 
+										v-on:click="previewImg">
+										preview
+									</a>
 								</div>
 
 								<a v-bind:href="entry.href" target="_blank" class="collection-item" style="margin-left: 30px; display: inline-block">
@@ -167,14 +184,15 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.0.1/vue.min.js"></script>
 	<script>
-		new Vue({
+		const vueInstance = new Vue({
 			el: '#app',
 			data: {
 				data: [],
-				currentPreviewTitle: "",
-				currentPreviewHref: "",
-				currentPreviewImg: "",
+				currentPreviewTitle: '',
+				currentPreviewHref: '',
+				currentPreviewImg: '',
 				mode : 'showUnNoticedOnly',
+				intervaInstance: '',
 				isMobile: false
 			},
 			methods: {
@@ -195,25 +213,15 @@
 						dataType: "json", 
 						success: function(data) {							
 							for (var key in data.container) {
-								if(this.mode === 'showAll'){
-									data.container[key].unNoticedCount = 
-										data.container[key].list.filter( element => element.isNoticed == false ).length
-								}
-								else {
-									data.container[key].unNoticedCount = data.container[key].list.length
-								}
+								data.container[key].unNoticedCount = data.container[key].list.length
+								data.container[key].list = data.container[key].list.sort((_x, _y) => _x.title > _y.title)
 							}
 							
-							// not sort since we use data.container[key].list[i].id as index to access data
-							
-							// Update data
-							this.data = data
-
-							let newContainer = {}
-
-							for(let i = 0; i < this.data.container.length; ++i)
-								newContainer[this.data.container[i].id] = this.data.container[i]
-							
+							this.data = data;
+							const newContainer = {}
+							for(let i = 0; i < data.container.length; ++i) {
+								newContainer[data.container[i].id] = data.container[i]
+							}							
 							this.data.container = newContainer
 					
 							// use css to tell user ajax done
@@ -227,19 +235,20 @@
 					})
 				},
 				read: function(event) {
-					if(event.stopPropagation) 
+					if(event.stopPropagation) { // prevent default action of a
 						event.stopPropagation()
+					}
 					
-					// no Read When showAll, just for insurance since read btn has not render in showAll mode
-					if(this.mode == 'showAll')
+					if(this.mode == 'showAll') { // no Read When showAll, just for insurance since read btn has not render in showAll mode
 						return
+					}
 
-					[containerIndex, entryIndex] = event.target.value.split('|')
+					const idx = event.target.value;
+					const [containerIndex, entryIndex] = event.target.value.split('|')
 
+					// use filter to find index, since this.data.container also filtered, only isNoticed === false is left
 					this.data.container[containerIndex].list.filter(e => e.id == entryIndex)[0].isNoticed = true
 					this.data.container[containerIndex].unNoticedCount--
-
-					idx = event.target.value;
 
 					$.ajax({
 						url: '/read/' + encodeURIComponent(idx),
@@ -252,50 +261,22 @@
 						}
 					})
 				},
-				previewImg: function(event) {
-					
-					[containerIndex, entryIndex] = event.target.value.split('|')
-					
-					let targetData = this.data.container[containerIndex].list.filter(e => e.id == entryIndex)[0]
-
-					this.currentPreviewImg = targetData.img;
-					this.currentPreviewTitle = targetData.title
-					this.currentPreviewHref = targetData.href
-
-				},
-				expandSite: function(event) {
-					
-					console.log('expand site')
-
-					/*if(this.mode == 'showUnNoticedOnly'){
-
-						// get unNoticeCount display badge
-						var span = event.target.children[2]
-						
-						if (span.classList.contains('display-none')) {
-							span.classList.remove('display-none')
-						} 
-						else {
-							span.classList.add('display-none')
-						}
-					}*/
-				},
 				readAll: function(event) {
-					
-					event.stopPropagation()
-					
-					if(this.mode === 'showAll'){
-						; // skip
+					if(event.stopPropagation) { // prevent default action of a
+						event.stopPropagation()
 					}
-					else{
-						containerIndex = event.target.value
-						
-						let unNoticedIndexes = this.data.container[containerIndex].list.reduce((acc, element) => {
+					
+					if(this.mode === 'showAll') {
+						return ; // skip
+					}
+					else {
+						const containerIndex = event.target.value
+						const unNoticedIndexes = this.data.container[containerIndex].list.reduce((acc, element) => {
 							if(element.isNoticed == false) {
 								return `${acc}&${element.id}`
 							}
 							return acc
-							}, `${containerIndex}`)
+						}, `${containerIndex}`)
 
 						this.data.container[containerIndex].unNoticedCount = 0
 						delete this.data.container[containerIndex].list
@@ -309,13 +290,34 @@
 							error: (data) => console.log(data)
 						})
 					}
-
+				},
+				previewImg: function(event) {
+					const [containerIndex, entryIndex] = event.target.value.split('|')					
+					const targetData = this.data.container[containerIndex].list.filter(e => e.id == entryIndex)[0]
+					this.currentPreviewImg = targetData.img;
+					this.currentPreviewTitle = targetData.title
+					this.currentPreviewHref = targetData.href
+				},
+				expandSite: function(event) {					
+					console.log('expand site')
+					/*if(this.mode == 'showUnNoticedOnly'){
+						// get unNoticeCount display badge
+						var span = event.target.children[2]						
+						if (span.classList.contains('display-none')) {
+							span.classList.remove('display-none')
+						} 
+						else {
+							span.classList.add('display-none')
+						}
+					}*/
 				},
 				toggleMode: function(event) {
-					event.stopPropagation()
+					if(event.stopPropagation) { // prevent default action of a
+						event.stopPropagation()
+					}
 					this.mode = event.target.name
-					console.log('toggle Mode to ' + this.mode)
 					this.refreshData()
+					console.log('toggle Mode to ' + this.mode)
 				},
 				checkMobile : function()
 				{
@@ -329,18 +331,19 @@
 			mounted: function() {
 				console.log('ready')
 				this.refreshData()
-				setInterval(this.refreshData, 1000 * 60 * 5)
+				this.intervaInstance = setInterval(this.refreshData, 1000 * 60 * 5)
 			
 				if(this.isMobile = this.checkMobile()){
 					document.getElementById("SiteName").classList.add("mobileSiteName")
-					document.getElementById("SiteName").innerHTML = 'Ragi Subscriptions (Mobile)'
+					document.getElementById("SiteName").innerHTML = 'Ragi Subs (Mobile)'
 				}
+				
+				$(document).ready(function() {
+					// init materialize components
+					$('.collapsible').collapsible();
+					$('.modal').modal();
+				})
 			}
-		})
-
-		$(document).ready(function() {
-			$('.collapsible').collapsible();
-			$('.modal').modal();
 		})
 	</script>
 </body>
