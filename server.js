@@ -1,15 +1,22 @@
 const express = require('express')
 const cors = require('cors')
 const fs = require('fs')
+const path = require('path')
 const bodyParser = require('body-parser')
+const cookieParser = require('cookie-parser')
 const RagiDB = require('../RagiDB/api.js')
 
 const app = express()
 
+const PASSWORD = process.env.RSW_PASSWORD
+const TOKEN = Date.now().toString()
+
 app.use(cors())
+app.use(cookieParser(TOKEN))
+app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(express.static('public'))
-app.listen(3001)
+app.listen(3003)
 
 console.log('RagiSubscriptionWeb Start')
 
@@ -23,12 +30,39 @@ app.use(function (req, res, next) {
 	} else {
 		console.log(`Request from ????, path = ${req.path}`)
 	}
-	next()
+
+	const whiteList = ['/login', '/favicon.ico']
+	if(whiteList.includes(req.path) || (req.signedCookies && req.signedCookies.auth === TOKEN)) {
+		next()
+	}
+	else {
+		res.redirect('/login')
+	}
 })
 
 app.get('/', (req, res) => {
-	let data = fs.readFileSync('index.html', 'utf8')
-	res.send(data)
+	let data = path.join(__dirname, 'index.html')
+	res.sendFile(data)
+})
+
+app.get('/login', (req, res) => {
+	if(req.signedCookies && req.signedCookies.auth === TOKEN) {
+		res.redirect('/')
+	}
+	else {
+		let data = path.join(__dirname, 'login.html')
+		res.sendFile(data)
+	}
+})
+
+app.post('/login', (req, res) => {
+	if(req.body.password === PASSWORD){
+		res.cookie('auth', TOKEN, { signed: true, maxAge: 1000 * 60 * 60 * 24 * 365 })
+		res.redirect('/')
+	}
+	else {
+		res.redirect('/login')
+	}
 })
 
 app.get('/json', (req, res) => {
