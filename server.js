@@ -1,15 +1,25 @@
-const express = require('express')
-const cors = require('cors')
 const fs = require('fs')
 const path = require('path')
+const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
-const RagiDB = require('../RagiDB/api.js')
+const cors = require('cors')
+
+const ip = 'http://127.0.0.1:3000'
+const { SubscriptionsDbApi } = require('subscriptionsdb')
+const DbApi = new SubscriptionsDbApi(ip)
+
+const TOKEN = Date.now().toString()
+const PASSWORD = process.env.RSW_PASSWORD || 'PASSWORD'
+
+const filePath = '../SubscriptionsDB/data/container.json'
+const dataPath = '../Subscriptions/data/data.json'
+
+const indexPath = path.join(__dirname, 'html', 'index.html')
+const managePath = path.join(__dirname, 'html', 'manage.html')
+const loginPath = path.join(__dirname, 'html', 'login.html')
 
 const app = express()
-
-const PASSWORD = process.env.RSW_PASSWORD
-const TOKEN = Date.now().toString()
 
 app.use(cors())
 app.use(cookieParser(TOKEN))
@@ -19,9 +29,6 @@ app.use(express.static('public'))
 app.listen(3003)
 
 console.log('RagiSubscriptionWeb Start')
-
-const filepath = '../RagiDB/data/container.json'
-const datapath = '../RagiSubscription/data/data.json'
 
 app.use(function (req, res, next) {
 	let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
@@ -41,8 +48,7 @@ app.use(function (req, res, next) {
 })
 
 app.get('/', (req, res) => {
-	let data = path.join(__dirname, 'index.html')
-	res.sendFile(data)
+	res.sendFile(indexPath)
 })
 
 app.get('/login', (req, res) => {
@@ -50,8 +56,7 @@ app.get('/login', (req, res) => {
 		res.redirect('/')
 	}
 	else {
-		let data = path.join(__dirname, 'login.html')
-		res.sendFile(data)
+		res.sendFile(loginPath)
 	}
 })
 
@@ -66,9 +71,8 @@ app.post('/login', (req, res) => {
 })
 
 app.get('/json', (req, res) => {
-	// RagiDB.GetContainer().then(data => res.send(data))
 	try {
-		let data = JSON.parse(fs.readFileSync(filepath, 'utf8'))
+		const data = JSON.parse(fs.readFileSync(filePath, 'utf8'))
 		data.container.map(e => {
 			e.list = e.list.filter(e2 => !e2.isNoticed)
 		})
@@ -80,44 +84,38 @@ app.get('/json', (req, res) => {
 
 app.get('/jsonAll', (req, res) => {
 	try {
-		let data = JSON.parse(fs.readFileSync(filepath, 'utf8'))
+		const data = JSON.parse(fs.readFileSync(filePath, 'utf8'))
 		res.send(data)
 	} catch (e) {
 		res.send('Error')
 	}
 })
 
-app.get('/readAll/:title', (req, res) => {
-	let entryIds = req.params.title.split('&')
-	let containerId = entryIds[0]
-	entryIds.splice(0, 1)
-	// dont try to use let [containerId, entryIds] = ... here
-	// you may need to modified RagiDB API
-
-	console.log(`readAll ${containerId} : ${entryIds}`)
-
-	RagiDB.NoticeEntryAll(containerId, entryIds).then(() => res.send('DONE')).catch(e => {
-		console.log(e)
-		process.exit()
-	})
+app.get('/readAll/:title', async (req, res) => {
+	let listIds = req.params.title.split('&')
+	let containerId = listIds[0]
+	listIds.splice(0, 1)
+	console.log(`readAll ${containerId} : ${listIds}`)
+	const args = { containerId, listIds }
+	const result = await DbApi.NoticeEntryAll(args)
+	res.send('DONE')
 })
 
-app.get('/read/:title', (req, res) => {
-	let [containerId, entryId] = req.params.title.split('|')
-	RagiDB.NoticeEntry(containerId, entryId).then(() => res.send('DONE')).catch(e => {
-		console.log(e)
-		process.exit()
-	})
+app.get('/read/:title', async (req, res) => {
+	let [containerId, listId] = req.params.title.split('|')
+	const args = { containerId, listId }
+	const result = await DbApi.NoticeEntry(args)
+	res.send('DONE')
 })
 
 app.get('/manage', (req, res) => {
-	let data = fs.readFileSync('data.html', 'utf8')
+	let data = fs.readFileSync(managePath, 'utf-8')
 	res.send(data)
 })
 
 app.get('/data', (req, res) => {
 	try {
-		let data = JSON.parse(fs.readFileSync(datapath, 'utf8'))
+		let data = JSON.parse(fs.readFileSync(dataPath, 'utf-8'))
 		res.send(data)
 	} catch (e) {
 		res.send('Error')
@@ -141,7 +139,7 @@ app.post('/save', (req, res) => {
 		if (isInvalid) {
 			res.send('NO')
 		} else {
-			fs.writeFileSync(datapath, JSON.stringify(data, null, 4), 'utf8')
+			fs.writeFileSync(dataPath, JSON.stringify(data, null, 4), 'utf8')
 			console.log('updated data.json')
 			res.send('OK')
 		}

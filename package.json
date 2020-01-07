@@ -1,15 +1,14 @@
 {
-  "name": "RagiSubscriptionWeb",
-  "version": "1.0.0",
-  "description": "todo",
-  "main": "main.js",
+  "name": "SubscriptionsWeb",
+  "version": "2.1.0",
+  "description": "",
   "dependencies": {
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.4",
     "cors": "^2.8.4",
     "express": "^4.16.2",
     "fs": "^0.0.1-security",
-    "node-ipc": "^9.1.1"
+    "subscriptionsdb": "git+https://github.com/yanagiragi/SubscriptionsDB.git"
   },
   "devDependencies": {},
   "scripts": {
@@ -18,13 +17,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yanagiragi/RagiSubscriptionWeb.git"
+    "url": "git+https://github.com/yanagiragi/SubscriptionsWeb.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/yanagiragi/RagiSubscriptionWeb/issues"
+    "url": "https://github.com/yanagiragi/SubscriptionsWeb/issues"
   },
-  "homepage": "https://github.com/yanagiragi/RagiSubscriptionWeb#readme"
+  "homepage": "https://github.com/yanagiragi/SubscriptionsWeb#readme"
 }
