@@ -1,7 +1,5 @@
-todo
+# SubscriptionsWeb
 
-配布highlight
+A web interface for [Subscriptions](https://github.com/yanagiragi/Subscriptions) (Private) and [SubscriptionsDB](https://github.com/yanagiragi/SubscriptionsDB)
 
-enhance:
-
-根據有無配布sort
+![](https://raw.githubusercontent.com/yanagiragi/SubscriptionsWeb/master/demo.PNG)
