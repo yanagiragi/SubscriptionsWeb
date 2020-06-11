@@ -12,8 +12,8 @@ const DbApi = new SubscriptionsDbApi(ip)
 const TOKEN = Date.now().toString()
 const PASSWORD = process.env.RSW_PASSWORD || 'PASSWORD'
 
-const filePath = '../SubscriptionsDB/data/container.json'
-const dataPath = '../Subscriptions/data/data.json'
+const filePath = '../DB/data/container.json'
+const dataPath = '../Crawler/data/data.json'
 
 const indexPath = path.join(__dirname, 'html', 'index.html')
 const managePath = path.join(__dirname, 'html', 'manage.html')
