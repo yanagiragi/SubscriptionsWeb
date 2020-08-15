@@ -179,6 +179,7 @@
 		</ul>
 	</div>
 
+	<!-- Materialize is built using jQuery, God Damn it -->
 	<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 	<!-- Compiled and minified JavaScript -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
@@ -196,11 +197,12 @@
 				isMobile: false
 			},
 			methods: {
-				refreshData() {
+				refreshData: async function() {					
 					console.log('refreshing data...');
 
 					// use css to tell user now pending...
-					$('#SiteName').css('color', '#aaa')
+					const pendingColor = '#aaa'
+					document.getElementById('SiteName').style.color = pendingColor
 
 					// if not, simply the data shall not wait for too long
 					// so don't disable the container
@@ -208,33 +210,36 @@
 						this.data.container = []
 					}
 
-					$.ajax({
-						url: (this.mode !== 'showAll') ? '/json' : 'jsonAll',
-						dataType: "json", 
-						success: function(data) {							
-							for (var key in data.container) {
-								data.container[key].unNoticedCount = data.container[key].list.length
-								data.container[key].list = data.container[key].list.sort((_x, _y) => _x.title > _y.title)
-							}
-							
-							this.data = data;
-							const newContainer = {}
-							for(let i = 0; i < data.container.length; ++i) {
-								newContainer[data.container[i].id] = data.container[i]
-							}							
-							this.data.container = newContainer
+					const url = (this.mode !== 'showAll') ? '/json' : 'jsonAll'
+					const resp = await fetch(url)
 					
-							// use css to tell user ajax done
-							$('#SiteName').css('color', '#fff')
-						}.bind(this),
-						error: function(data) {
-							// use css to tell user ajax error
-							$('#SiteName').css('color', '#f00')
-							console.log("load json error!");
+					if (resp.ok) {
+						const data = await resp.json()
+						
+						for (var key in data.container) {
+							data.container[key].unNoticedCount = data.container[key].list.length
+							data.container[key].list = data.container[key].list.sort((_x, _y) => _x.title > _y.title)
 						}
-					})
+						
+						this.data = data;
+						const newContainer = {}
+						for(let i = 0; i < data.container.length; ++i) {
+							newContainer[data.container[i].id] = data.container[i]
+						}							
+						this.data.container = newContainer
+				
+						// use css to tell user ajax done
+						$('#SiteName').css('color', '#fff')
+					}
+					else {
+						// use css to tell user ajax error
+						const pendingErrorColor = '#f00'
+						document.getElementById('SiteName').style.color = pendingErrorColor
+
+						console.log("load json error!");	
+					}
 				},
-				read: function(event) {
+				read: async function(event) {
 					if(event.stopPropagation) { // prevent default action of a
 						event.stopPropagation()
 					}
@@ -250,18 +255,17 @@
 					this.data.container[containerIndex].list.filter(e => e.id == entryIndex)[0].isNoticed = true
 					this.data.container[containerIndex].unNoticedCount--
 
-					$.ajax({
-						url: '/read/' + encodeURIComponent(idx),
-						success: function(data) {
-							console.log('succuess')
-							// this.refreshData()
-						}.bind(this),
-						error: function(data) {
-							console.log('failed to read ' + title)
-						}
-					})
+					const url = '/read/' + encodeURIComponent(idx)
+					const resp = await fetch(url)
+					if (resp.ok) {
+						console.log('succuess')
+						// this.refreshData()
+					}
+					else {
+						console.log('failed to read ' + title)
+					}
 				},
-				readAll: function(event) {
+				readAll: async function(event) {
 					if(event.stopPropagation) { // prevent default action of a
 						event.stopPropagation()
 					}
@@ -280,15 +284,16 @@
 
 						this.data.container[containerIndex].unNoticedCount = 0
 						delete this.data.container[containerIndex].list
-						
-						$.ajax({
-							url: '/readAll/' + unNoticedIndexes,
-							success : function(data){
-								//setTimeout(this.refreshData, 1000 * 10)
-								console.log('success')
-							}.bind(this),
-							error: (data) => console.log(data)
-						})
+
+						const url = '/readAll/' + unNoticedIndexes
+						const resp = await fetch(url)
+						if (resp.ok) {
+							//setTimeout(this.refreshData, 1000 * 10)
+							console.log('success')
+						}
+						else {
+							console.log('failed to readAll')
+						}
 					}
 				},
 				previewImg: function(event) {
@@ -337,6 +342,22 @@
 					document.getElementById("SiteName").classList.add("mobileSiteName")
 					document.getElementById("SiteName").innerHTML = 'Ragi Subs (Mobile)'
 				}
+
+				// Native way from Materialize cite, won't work
+				// Error: Uncaught TypeError: e.each is not a function
+				/*document.addEventListener('DOMContentLoaded', function() {
+					const elems = document.querySelectorAll('.collapsible');
+					const options = {}
+					if (Materialize.Collapsible) {
+						const instances = Materialize.Collapsible.init(elems, options);
+					}
+				});
+
+				document.addEventListener('DOMContentLoaded', function() {
+					const elems = document.querySelectorAll('.modal');
+					const options = {}
+					const instances = Materialize.Modal.init([...elems], options);
+				});*/
 				
 				$(document).ready(function() {
 					// init materialize components

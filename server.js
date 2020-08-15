@@ -11,6 +11,8 @@ const DbApi = new SubscriptionsDbApi(ip)
 
 const TOKEN = Date.now().toString()
 const PASSWORD = process.env.RSW_PASSWORD || 'PASSWORD'
+const PORT = 3003
+const COOKIE_NAME = Math.random()
 
 const filePath = '../DB/data/container.json'
 const dataPath = '../Crawler/data/data.json'
@@ -26,20 +28,17 @@ app.use(cookieParser(TOKEN))
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(express.static('public'))
-app.listen(3003)
+app.listen(PORT)
 
-console.log('RagiSubscriptionWeb Start')
+console.log('RagiSubscriptionWeb Start, TOKEN = ' + TOKEN)
 
 app.use(function (req, res, next) {
 	let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
-	if (ip && req.path) {
-		console.log(`Request from ${ip}, path = ${req.path}`)
-	} else {
-		console.log(`Request from ????, path = ${req.path}`)
-	}
+
+	console.log(`Request from ${ip ? ip : '???'}, path = ${req.path}, req.cookies = ${JSON.stringify(req.cookies)}`)
 
 	const whiteList = ['/login', '/favicon.ico']
-	if(whiteList.includes(req.path) || (req.signedCookies && req.signedCookies.auth === TOKEN)) {
+	if(whiteList.includes(req.path) || (req.cookies && req.cookies[COOKIE_NAME] === TOKEN)) {
 		next()
 	}
 	else {
@@ -62,7 +61,8 @@ app.get('/login', (req, res) => {
 
 app.post('/login', (req, res) => {
 	if(req.body.password === PASSWORD){
-		res.cookie('auth', TOKEN, { signed: true, maxAge: 1000 * 60 * 60 * 24 * 365 })
+		//res.cookie('auth', TOKEN, { signed: true, maxAge: 1000 * 60 * 60 * 24 * 365 })
+		res.cookie(COOKIE_NAME, TOKEN, { maxAge: 1000 * 60 * 60 * 24 * 365 })
 		res.redirect('/')
 	}
 	else {
