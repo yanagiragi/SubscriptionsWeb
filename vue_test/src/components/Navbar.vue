@@ -1,12 +1,14 @@
 <template>
     <nav>
-        <div class="nav-wrapper deep-purple darken-1">
-        <a href="#" class="brand-logo" style="display: block;" @click="Reload">
+        <div class="nav-wrapper blue-grey lighten-1">
+        <a href="#" class="brand-logo" style="display: block;" @click="$emit('reload-data')">
             <div id="SiteName">Subscriptions</div>
         </a>
+        <!--
         <ul id="nav-mobile" class="right hide-on-med-and-down">
-            <li><a href="#" v-on:click="SaveData">Save</a></li>
+            <li><a href="#" @click="SaveData">Save</a></li>
         </ul>
+        -->
         </div>
     </nav>
 </template>
@@ -15,12 +17,15 @@
 
 export default {
   name: 'Navbar',
-  props: {
-    mobileMode: Boolean
-  },
+  props: [
+    'mobileMode'
+  ],
   methods: {
     Reload: function () {
       alert('123')
+    },
+    SaveData: function () {
+
     }
   }
 }

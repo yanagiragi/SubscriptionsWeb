@@ -13,8 +13,4 @@
   color: #2c3e50;
 }
 
-body {
-  /* background-color: #313338; */
-}
-
 </style>
