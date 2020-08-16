@@ -1,20 +1,20 @@
 <template>
   <div class="home">
     <Navbar mobileMode="false" v-on:reload-data="Reload"/>
-    <Collapsible :data="data" :mode="mode" />
+    <Collection :data="data" :mode="mode" />
   </div>
 </template>
 
 <script>
 // @ is an alias to /src
 import Navbar from '@/components/Navbar.vue'
-import Collapsible from '@/components/Collapsible.vue'
+import Collection from '@/components/Collection.vue'
 
 export default {
   name: 'Home',
   components: {
     Navbar,
-    Collapsible
+    Collection
   },
   data: () => {
     return {
