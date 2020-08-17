@@ -1,21 +1,10 @@
 <template>
   <div>
-    <!-- Modal -->
-    <div id="modal1" class="modal">
-      <div class="modal-content">
-          <h4 style="text-alignment: center">
-              <a v-bind:href="currentPreviewHref" target="_blank">
-                  {{ currentPreviewTitle }}
-              </a>
-          </h4>
-          <div style="padding-top: 50px">
-              <img v-bind:src="currentPreviewImg" style="width: 100%">
-          </div>
-      </div>
-      <div class="modal-footer">
-          <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat">Agree</a>
-      </div>
-    </div>
+    <Modal
+      :currentPreviewHref="currentPreviewHref"
+      :currentPreviewImg="currentPreviewImg"
+      :currentPreviewTitle="currentPreviewTitle"
+    />
 
     <!-- Collapsible -->
     <ul v-if="mode === 'showUnNoticedOnly'" class="collapsible collection" data-collapsible="accordion">
@@ -85,7 +74,7 @@
 <script>
 
 import M from 'materialize-css'
-// import Collapsible from './Collapsible.vue'
+import Modal from './Modal.vue'
 
 export default {
   name: 'Collection',
@@ -97,7 +86,7 @@ export default {
     }
   },
   components: {
-    // Collapsible
+    Modal
   },
   props: [
     'data', 'mode'
