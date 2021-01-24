@@ -5,13 +5,13 @@ const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const cors = require('cors')
 
-const ip = 'http://127.0.0.1:3000'
+const ip = 'http://127.0.0.1:7070'
 const { SubscriptionsDbApi } = require('subscriptionsdb')
 const DbApi = new SubscriptionsDbApi(ip)
 
 const TOKEN = Date.now().toString()
 const PASSWORD = process.env.RSW_PASSWORD || 'PASSWORD'
-const PORT = 3003
+const PORT = 3007
 const COOKIE_NAME = Math.random()
 
 const filePath = '../DB/data/container.json'
@@ -70,21 +70,18 @@ app.post('/login', (req, res) => {
 	}
 })
 
-app.get('/json', (req, res) => {
+app.get('/json', async (req, res) => {
 	try {
-		const data = JSON.parse(fs.readFileSync(filePath, 'utf8'))
-		data.container.map(e => {
-			e.list = e.list.filter(e2 => !e2.isNoticed)
-		})
+		const data = await DbApi.GetUnNoticedContainers()
 		res.send(data)
 	} catch (e) {
 		res.send('Error')
 	}
 })
 
-app.get('/jsonAll', (req, res) => {
+app.get('/jsonAll', async (req, res) => {
 	try {
-		const data = JSON.parse(fs.readFileSync(filePath, 'utf8'))
+		const data = await DbApi.GetContainers()
 		res.send(data)
 	} catch (e) {
 		res.send('Error')
@@ -93,17 +90,15 @@ app.get('/jsonAll', (req, res) => {
 
 app.get('/readAll/:title', async (req, res) => {
 	let listIds = req.params.title.split('&')
-	let containerId = listIds[0]
-	listIds.splice(0, 1)
-	console.log(`readAll ${containerId} : ${listIds}`)
-	const args = { containerId, listIds }
+	console.log(`readAll : ${listIds}`)
+	const args = { listIds }
 	const result = await DbApi.NoticeEntryAll(args)
 	res.send('DONE')
 })
 
 app.get('/read/:title', async (req, res) => {
-	let [containerId, listId] = req.params.title.split('|')
-	const args = { containerId, listId }
+	const args = { id: req.params.title }
+	console.log(`read : ${args}`)
 	const result = await DbApi.NoticeEntry(args)
 	res.send('DONE')
 })

@@ -97,7 +97,9 @@
 
 		<!-- if mode is "showAll" -->
 		<ul v-if="mode == 'showAll'" class="collapsible collection" data-collapsible="accordion">
-			<li v-for="container in data.container">				
+			{{ data.container }}	
+			<li v-for="container in data.container">
+				
 				<div class="collapsible-header" v-on:click="expandSite">
 					<i class="material-icons">filter_drama</i>
 					{{ data.types[container.typeId] }} [ {{ container.nickname }} ]
@@ -115,7 +117,7 @@
 										class="waves-effect waves-light btn btn-small modal-trigger" 
 										href="#modal1" 
 										v-bind:value="`${container.id}|${entry.id}`" 
-										v-on:click="previewImg">
+										v-on:click="previewImg(container.id, entry.id)">
 										preview
 									</a>
 								</div>
@@ -139,7 +141,7 @@
 					<span class="badge new">
 						{{ container.unNoticedCount }}
 					</span>
-					<span class="btn btn-small-ex" v-on:click="readAll" v-bind:value="container.id">
+					<span class="btn btn-small-ex" @click="readAll($event, container.typeId, container.nickname)">
 						read all
 					</span>
 				</div>
@@ -147,12 +149,9 @@
 				<div v-if="container.unNoticedCount > 0" class="collapsible-body">
 					<ul class="collection">
 						<li v-for="entry in container.list">
-							<div v-if="entry.isNoticed == false">
+							<div v-if="entry.isnoticed == false">
 								<div class="yrBtn">
-									<a 	class="waves-effect waves-light btn btn-small modal-trigger" 
-										href="#" 
-										v-bind:value="container.id + '|' + entry.id" 
-										v-on:click="read">
+									<a class="waves-effect waves-light btn btn-small modal-trigger" href="#" @click="read($event, container.typeId, container.nickname, entry.id)">
 										read
 									</a>
 								</div>
@@ -161,8 +160,7 @@
 									<a	v-if="entry.img != 'NULL'"
 										class="waves-effect waves-light btn btn-small modal-trigger" 
 										href="#modal1" 
-										v-bind:value="`${container.id}|${entry.id}`" 
-										v-on:click="previewImg">
+										@click="previewImg($event, container.typeId, container.nickname, entry.id)">
 										preview
 									</a>
 								</div>
@@ -222,11 +220,11 @@
 						}
 						
 						this.data = data;
-						const newContainer = {}
+						/*const newContainer = {}
 						for(let i = 0; i < data.container.length; ++i) {
 							newContainer[data.container[i].id] = data.container[i]
 						}							
-						this.data.container = newContainer
+						this.data.container = newContainer*/
 				
 						// use css to tell user ajax done
 						$('#SiteName').css('color', '#fff')
@@ -239,7 +237,7 @@
 						console.log("load json error!");	
 					}
 				},
-				read: async function(event) {
+				read: async function(event, containerIndex, nickname, entryIndex) {
 					if(event.stopPropagation) { // prevent default action of a
 						event.stopPropagation()
 					}
@@ -248,14 +246,12 @@
 						return
 					}
 
-					const idx = event.target.value;
-					const [containerIndex, entryIndex] = event.target.value.split('|')
-
 					// use filter to find index, since this.data.container also filtered, only isNoticed === false is left
-					this.data.container[containerIndex].list.filter(e => e.id == entryIndex)[0].isNoticed = true
-					this.data.container[containerIndex].unNoticedCount--
+					const idx = this.data.container.findIndex(e => e.typeId == containerIndex && e.nickname == nickname)
+					this.data.container[idx].list.filter(e => e.id == entryIndex)[0].isnoticed = true
+					this.data.container[idx].unNoticedCount--
 
-					const url = '/read/' + encodeURIComponent(idx)
+					const url = '/read/' + encodeURIComponent(entryIndex)
 					const resp = await fetch(url)
 					if (resp.ok) {
 						console.log('succuess')
@@ -265,7 +261,7 @@
 						console.log('failed to read ' + title)
 					}
 				},
-				readAll: async function(event) {
+				readAll: async function(event, containerIndex, nickname) {
 					if(event.stopPropagation) { // prevent default action of a
 						event.stopPropagation()
 					}
@@ -274,21 +270,20 @@
 						return ; // skip
 					}
 					else {
-						const containerIndex = event.target.value
-						const unNoticedIndexes = this.data.container[containerIndex].list.reduce((acc, element) => {
-							if(element.isNoticed == false) {
+						const idx = this.data.container.findIndex(x => x.typeId == containerIndex && x.nickname == nickname)
+						const unNoticedIndexes = this.data.container[idx].list.reduce((acc, element) => {
+							if(element.isnoticed == false) {
 								return `${acc}&${element.id}`
 							}
 							return acc
-						}, `${containerIndex}`)
+						}, '')
 
-						this.data.container[containerIndex].unNoticedCount = 0
-						delete this.data.container[containerIndex].list
+						this.data.container[idx].unNoticedCount = 0
+						delete this.data.container[idx].list
 
 						const url = '/readAll/' + unNoticedIndexes
 						const resp = await fetch(url)
 						if (resp.ok) {
-							//setTimeout(this.refreshData, 1000 * 10)
 							console.log('success')
 						}
 						else {
@@ -296,9 +291,9 @@
 						}
 					}
 				},
-				previewImg: function(event) {
-					const [containerIndex, entryIndex] = event.target.value.split('|')					
-					const targetData = this.data.container[containerIndex].list.filter(e => e.id == entryIndex)[0]
+				previewImg: function(event, containerIndex, nickname, entryIndex) {
+					const idx = this.data.container.findIndex(x => x.typeId == containerIndex && x.nickname == nickname)
+					const targetData = this.data.container[idx].list.filter(e => e.id == entryIndex)[0]
 					this.currentPreviewImg = targetData.img;
 					this.currentPreviewTitle = targetData.title
 					this.currentPreviewHref = targetData.href
@@ -340,7 +335,7 @@
 			
 				if(this.isMobile = this.checkMobile()){
 					document.getElementById("SiteName").classList.add("mobileSiteName")
-					document.getElementById("SiteName").innerHTML = 'Ragi Subs (Mobile)'
+					document.getElementById("SiteName").innerHTML = "Ragi Subs (Mobile)"
 				}
 
 				// Native way from Materialize cite, won't work
