@@ -86,6 +86,15 @@
 					</div>
 					<div class="collapsible-body" style="background-color: rgb(200, 200, 200)">
 						<ul>
+							<div class="row">
+								<div class="col s1 offset-s11">
+									<a class="btn-floating btn waves-effect waves-light red" v-on:click="AddContainer" style="margin-left: 80%">
+										<i class="material-icons" style="margin-top: 2px;" v-bind:value="container.type">
+											add
+										</i>
+									</a>
+								</div>
+							</div>
 							<li v-for="(site, index) in container.sites">
 								<div class="row">
 									<form class="col s12">
@@ -107,15 +116,6 @@
 									</form>
 								</div>
 							</li>
-							<div class="row">
-								<div class="col s1 offset-s11">
-									<a class="btn-floating btn waves-effect waves-light red" v-on:click="AddContainer" style="margin-left: 80%">
-										<i class="material-icons" style="margin-top: 2px;" v-bind:value="container.type">
-											add
-										</i>
-									</a>
-								</div>
-							</div>
 						</ul>
 					</div>
 				</li>
@@ -216,10 +216,11 @@
 					let target = event.target.value
 					for(let i = 0; i < this.data.length; ++i){
 						if(target === this.data[i].type) {
-							this.data[i].sites.push({
-								'nickname': 'NULL',
-								'url': 'NULL',
-								'passRequest': 'NULL'
+							this.data[i].sites.unshift({
+								'nickname': '',
+								'url': '',
+								'passRequest': "false",
+								'isOmit': "false"
 							})
 							break
 						}
