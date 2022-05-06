@@ -5,7 +5,7 @@ const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const cors = require('cors')
 
-const ip = 'http://127.0.0.1:7070'
+const ip = 'http://prof.csie.io:7070'
 const { SubscriptionsDbApi } = require('subscriptionsdb')
 const DbApi = new SubscriptionsDbApi(ip)
 
@@ -14,7 +14,7 @@ const PASSWORD = process.env.RSW_PASSWORD || 'PASSWORD'
 const PORT = 3007
 const COOKIE_NAME = Math.random()
 
-const dataPath = '../Subscriptions/data/data.json'
+const dataPath = '../Crawler/data/data.json'
 
 const indexPath = path.join(__dirname, 'html', 'index.html')
 const managePath = path.join(__dirname, 'html', 'manage.html')
@@ -71,6 +71,19 @@ app.get('/json', async (req, res) => {
 		const data = await DbApi.GetUnNoticedContainers()
 		res.send(data)
 	} catch (e) {
+		console.log(e)
+		res.send('Error')
+	}
+})
+
+app.get('/json/:type/:nickname', async (req, res) => {
+	try {
+		const type = req.params.type
+		const nickname = req.params.nickname
+		const data = await DbApi.GetContainersWithFilter(type, nickname)
+		res.send(data)
+	} catch (e) {
+		console.log(e)
 		res.send('Error')
 	}
 })
@@ -80,6 +93,7 @@ app.get('/jsonAll', async (req, res) => {
 		const data = await DbApi.GetContainers()
 		res.send(data)
 	} catch (e) {
+		console.log(e)
 		res.send('Error')
 	}
 })
@@ -109,6 +123,7 @@ app.get('/data', (req, res) => {
 		const data = JSON.parse(fs.readFileSync(dataPath, 'utf-8'))
 		res.send(data)
 	} catch (e) {
+		console.log(e)
 		res.send('Error')
 	}
 })
