@@ -75,7 +75,7 @@
 			</nav>
 
 			<ul class="collapsible">
-				<li v-for="container in data">
+				<li v-for="container in filteredData">
 					<div class="collapsible-header">
 						<i class="material-icons">place</i>
 						{{ container.type }}
@@ -166,6 +166,7 @@
 			el: '#app',
 			data: {
 				data: [],
+				filteredData: [],
 				isMobile: false
 			},
 			methods: {
@@ -177,9 +178,11 @@
 						dataType: "json",
 						success: function(data) {
 							this.data = data
-								// use css to tell user ajax done
-								$('#SiteName').css('color', '#fff')
-								$('select').material_select()
+							this.filteredData = data.filter(x => x.type !== 'Pages.Functions')
+							console.log(this.filteredData)
+							// use css to tell user ajax done
+							$('#SiteName').css('color', '#fff')
+							$('select').material_select()
 						}.bind(this),
 						error: function(data) {
 							// use css to tell user ajax error

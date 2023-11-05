@@ -132,17 +132,15 @@ app.post('/save', (req, res) => {
 	try {
 		const data = req.body
 
+		const errorFunc = ele => {
+			return (ele.url === 'NULL' || ele.nickname === 'NULL' || ele.url.length === 0 || ele.nickname.length === 0)
+		}
+
+		const filteredData = data.filter(ele => ele.type !== 'Pages.Functions')
+		
 		const Invalids = []
-
-		for (let i = 0; i < data.length; ++i) {
-			const invalideSites = data[i].sites.reduce((acc, ele) => {
-				const hasError = ele.url === 'NULL' ||
-								ele.nickname === 'NULL' ||
-								ele.url.length === 0 ||
-								ele.nickname.length === 0
-				return hasError ? acc.concat(ele) : acc
-			}, [])
-
+		for (let i = 0; i < filteredData.length; ++i) {
+			const invalideSites = filteredData[i].sites.reduce((acc, ele) => errorFunc(ele) ? acc.concat(ele) : acc, [])
 			if (invalideSites.length > 0) { Invalids.push(invalideSites) }
 		}
 
