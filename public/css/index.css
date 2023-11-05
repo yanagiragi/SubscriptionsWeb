@@ -1,0 +1,45 @@
+body {
+    background-color: #313338;
+}
+
+.btn-small {
+    height: 24px;
+    line-height: 24px;
+    padding: 0 0.5rem;
+    /*font-size: 0.8em;*/
+    text-transform: capitalize;
+}
+
+.collection .collection-item {
+    background-color: #313338;
+}
+
+.collapsible-header {
+    background-color: #d5d5d5;
+}
+
+.btn-small-ex {
+    height: 21px;
+    line-height: 24px;
+    padding: 0 0.5rem;
+    margin-left: 0.5em;
+    font-size: 0.8em;
+    text-transform: capitalize;
+}
+
+.modal {
+    max-height: 75%;
+}
+
+.display-none {
+    display: none;
+}
+
+.yrBtn {
+    display: inline-block;
+    width: 70px;
+}
+
+.mobileSiteName {
+    font-size: 12px;
+}

@@ -32,129 +32,124 @@ app.listen(PORT)
 console.log('RagiSubscriptionWeb Start, TOKEN = ' + TOKEN)
 
 app.use(async function (req, res, next) {
-	const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
+    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
 
-	console.log(`Request from ${ip || '???'}, path = ${req.path}, req.cookies = ${JSON.stringify(req.cookies)}`)
+    console.log(`Request from ${ip || '???'}, path = ${req.path}, req.cookies = ${JSON.stringify(req.cookies)}`)
 
-	const whiteList = ['/login', '/favicon.ico']
-	if (whiteList.includes(req.path) || (req.cookies && req.cookies[COOKIE_NAME] === TOKEN)) {
-		next()
-	} else {
-		res.redirect('/login')
-	}
+    const whiteList = ['/login', '/favicon.ico']
+    if (whiteList.includes(req.path) || (req.cookies && req.cookies[COOKIE_NAME] === TOKEN)) {
+        next()
+    } else {
+        res.redirect('/login')
+    }
 })
 
 app.get('/', (req, res) => {
-	res.sendFile(indexPath)
+    res.sendFile(indexPath)
 })
 
 app.get('/login', (req, res) => {
-	if (req.signedCookies && req.signedCookies.auth === TOKEN) {
-		res.redirect('/')
-	} else {
-		res.sendFile(loginPath)
-	}
+    if (req.signedCookies && req.signedCookies.auth === TOKEN) {
+        res.redirect('/')
+    } else {
+        res.sendFile(loginPath)
+    }
 })
 
 app.post('/login', (req, res) => {
-	if (req.body.password === PASSWORD) {
-		// res.cookie('auth', TOKEN, { signed: true, maxAge: 1000 * 60 * 60 * 24 * 365 })
-		res.cookie(COOKIE_NAME, TOKEN, { maxAge: 1000 * 60 * 60 * 24 * 365 })
-		res.redirect('/')
-	} else {
-		res.redirect('/login')
-	}
+    if (req.body.password === PASSWORD) {
+        // res.cookie('auth', TOKEN, { signed: true, maxAge: 1000 * 60 * 60 * 24 * 365 })
+        res.cookie(COOKIE_NAME, TOKEN, { maxAge: 1000 * 60 * 60 * 24 * 365 })
+        res.redirect('/')
+    } else {
+        res.redirect('/login')
+    }
 })
 
 app.get('/json', async (req, res) => {
-	try {
-		const data = await DbApi.GetUnNoticedContainers()
-		res.send(data)
-	} catch (e) {
-		console.log(e)
-		res.send('Error')
-	}
+    try {
+        const data = await DbApi.GetUnNoticedContainers()
+        res.send(data)
+    } catch (e) {
+        console.log(e)
+        res.send('Error')
+    }
 })
 
 app.get('/json/:type/:nickname', async (req, res) => {
-	try {
-		const type = req.params.type
-		const nickname = req.params.nickname
-		const data = await DbApi.GetContainersWithFilter(type, nickname)
-		res.send(data)
-	} catch (e) {
-		console.log(e)
-		res.send('Error')
-	}
+    try {
+        const type = req.params.type
+        const nickname = req.params.nickname
+        const data = await DbApi.GetContainersWithFilter(type, nickname)
+        res.send(data)
+    } catch (e) {
+        console.log(e)
+        res.send('Error')
+    }
 })
 
 app.get('/jsonAll', async (req, res) => {
-	try {
-		const data = await DbApi.GetContainers()
-		res.send(data)
-	} catch (e) {
-		console.log(e)
-		res.send('Error')
-	}
+    try {
+        const data = await DbApi.GetContainers()
+        res.send(data)
+    } catch (e) {
+        console.log(e)
+        res.send('Error')
+    }
 })
 
 app.get('/readAll/:title', async (req, res) => {
-	const listIds = req.params.title.split('&')
-	console.log(`readAll : ${listIds}`)
-	const args = { listIds }
-	const result = await DbApi.NoticeEntryAll(args)
-	res.send('DONE')
+    const listIds = req.params.title.split('&')
+    console.log(`readAll : ${listIds}`)
+    const args = { listIds }
+    const result = await DbApi.NoticeEntryAll(args)
+    res.send('DONE')
 })
 
 app.get('/read/:title', async (req, res) => {
-	const args = { id: req.params.title }
-	console.log(`read : ${args}`)
-	const result = await DbApi.NoticeEntry(args)
-	res.send('DONE')
+    const args = { id: req.params.title }
+    console.log(`read : ${args}`)
+    const result = await DbApi.NoticeEntry(args)
+    res.send('DONE')
 })
 
 app.get('/manage', (req, res) => {
-	const data = fs.readFileSync(managePath, 'utf-8')
-	res.send(data)
+    const data = fs.readFileSync(managePath, 'utf-8')
+    res.send(data)
 })
 
 app.get('/data', (req, res) => {
-	try {
-		const data = JSON.parse(fs.readFileSync(dataPath, 'utf-8'))
-		res.send(data)
-	} catch (e) {
-		console.log(e)
-		res.send('Error')
-	}
+    try {
+        const data = JSON.parse(fs.readFileSync(dataPath, 'utf-8'))
+        res.send(data)
+    } catch (e) {
+        console.log(e)
+        res.send('Error')
+    }
 })
 
 app.post('/save', (req, res) => {
-	try {
-		const data = req.body
+    try {
+        const data = req.body
+        const errorFunc = ele => (ele.url === 'NULL' || ele.nickname === 'NULL' || ele.url.length === 0 || ele.nickname.length === 0)
+        const filteredData = data.filter(ele => ele.type !== 'Pages.Functions')
+        const Invalids = []
+        for (let i = 0; i < filteredData.length; ++i) {
+            const invalideSites = filteredData[i].sites.reduce((acc, ele) => errorFunc(ele) ? acc.concat(ele) : acc, [])
+            if (invalideSites.length > 0) { Invalids.push(invalideSites) }
+        }
 
-		const errorFunc = ele => {
-			return (ele.url === 'NULL' || ele.nickname === 'NULL' || ele.url.length === 0 || ele.nickname.length === 0)
-		}
+        console.log(`isInvalid = ${JSON.stringify(Invalids)}`)
 
-		const filteredData = data.filter(ele => ele.type !== 'Pages.Functions')
-		
-		const Invalids = []
-		for (let i = 0; i < filteredData.length; ++i) {
-			const invalideSites = filteredData[i].sites.reduce((acc, ele) => errorFunc(ele) ? acc.concat(ele) : acc, [])
-			if (invalideSites.length > 0) { Invalids.push(invalideSites) }
-		}
-
-		console.log(`isInvalid = ${JSON.stringify(Invalids)}`)
-
-		if (Invalids.length > 0) {
-			res.send('NO')
-		} else {
-			fs.writeFileSync(dataPath, JSON.stringify(data, null, 4), 'utf8')
-			console.log('updated data.json')
-			res.send('OK')
-		}
-	} catch (e) {
-		console.log(e)
-		res.send('Error')
-	}
+        if (Invalids.length > 0) {
+            res.send('NO')
+        } else {
+            fs.writeFileSync(dataPath, JSON.stringify(data, null, 4), 'utf8')
+            console.log('updated data.json')
+            res.send('OK')
+        }
+    } catch (e) {
+        console.log(e)
+        res.send('Error')
+    }
 })

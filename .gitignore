@@ -64,3 +64,6 @@ weblog.txt
 log.txt
 
 ecosystem.config.js
+
+# winston log files
+*-audit.json
