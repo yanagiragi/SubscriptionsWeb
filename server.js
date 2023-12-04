@@ -5,7 +5,7 @@ const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const cors = require('cors')
 
-const ip = 'http://prof.csie.io:7070'
+const ip = process.env.DB_IP || 'http://127.0.0.1'
 const { SubscriptionsDbApi } = require('subscriptionsdb')
 const DbApi = new SubscriptionsDbApi(ip)
 
@@ -22,6 +22,7 @@ const loginPath = path.join(__dirname, 'html', 'login.html')
 
 const app = express()
 
+// must setup plugins before setup any route!
 app.use(cors())
 app.use(cookieParser(TOKEN))
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -58,7 +59,6 @@ app.get('/login', (req, res) => {
 
 app.post('/login', (req, res) => {
     if (req.body.password === PASSWORD) {
-        // res.cookie('auth', TOKEN, { signed: true, maxAge: 1000 * 60 * 60 * 24 * 365 })
         res.cookie(COOKIE_NAME, TOKEN, { maxAge: 1000 * 60 * 60 * 24 * 365 })
         res.redirect('/')
     } else {
