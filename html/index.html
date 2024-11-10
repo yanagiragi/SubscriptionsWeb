@@ -23,9 +23,9 @@
                 </a>
                 <ul id="nav-mobile" class="right hide-on-med-and-down">
                     <!-- Why value not works? -->
-                    <li><a href="#" name="showUnNoticedOnly" v-on:click="toggleMode">UnNoticed Only</a></li>
+                    <li><a href="#" name="showUnNoticedOnly" v-on:click="toggleMode">Unnoticed</a></li>
                     <!--<li><a href="#" name="showUnNoticedAll" v-on:click="toggleMode">UnNoticed All</a></li>-->
-                    <li><a href="#" name="showAll" v-on:click="toggleMode">History</a></li>
+                    <li><a href="#" name="recentRead" v-on:click="toggleMode">Recent Read</a></li>
                 </ul>
             </div>
         </nav>
@@ -47,10 +47,9 @@
             </div>
         </div>
 
-        <!-- if mode is "showAll" -->
-        <ul v-if="mode == 'showAll'" class="collapsible collection" data-collapsible="accordion">
-            {{ data.container }}
-            <li v-for="container in data.container">
+        <!-- if mode is "recentRead" -->
+        <ul v-if="mode == 'recentRead'" class="collapsible collection" data-collapsible="accordion">
+            <li v-for="container in recentRead">
 
                 <div class="collapsible-header" v-on:click="expandSite">
                     <i class="material-icons">filter_drama</i>
