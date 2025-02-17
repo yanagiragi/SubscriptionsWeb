@@ -166,6 +166,8 @@ const vueInstance = new Vue({
         if (this.isMobile) {
             document.getElementById('SiteName').classList.add('mobileSiteName')
             document.getElementById('SiteName').innerHTML = 'Subs (Mobile)'
+            const navButtons = [...document.querySelectorAll('#nav-mobile a')]
+            navButtons.forEach(x => x.classList.add('mobileNavButton'))
         }
 
         $(document).ready(function () {
