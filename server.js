@@ -30,7 +30,7 @@ app.use(bodyParser.json())
 app.use(express.static('public'))
 app.listen(PORT)
 
-console.log('RagiSubscriptionWeb Start, TOKEN = ' + TOKEN)
+console.log(`RagiSubscriptionWeb Start on ${ip}:${PORT}, TOKEN = ${TOKEN}`)
 
 app.use(async function (req, res, next) {
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
