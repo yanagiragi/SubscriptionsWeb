@@ -11,7 +11,7 @@ const DbApi = new SubscriptionsDbApi(ip)
 
 const TOKEN = Date.now().toString()
 const PASSWORD = process.env.RSW_PASSWORD || 'PASSWORD'
-const PORT = 3007
+const PORT = process.env.PORT || 3007
 const COOKIE_NAME = Math.random()
 
 const dataPath = '../Crawler/data/data.json'
