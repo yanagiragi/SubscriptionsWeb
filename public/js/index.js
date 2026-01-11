@@ -60,7 +60,7 @@ const vueInstance = new Vue({
                 return
             }
 
-            entry.isNoticed = true
+            this.$set(entry.data, 'isNoticed', true)
 
             // add to recentRead
             this.addRecentRead(typeId, entry)
@@ -94,8 +94,8 @@ const vueInstance = new Vue({
             const typeId = this.data.container[idx].typeId
             this.data.container[idx].list.forEach(x => this.addRecentRead(typeId, x))
 
-            this.data.container[idx].unNoticedCount = 0
-            delete this.data.container[idx].list
+            this.$set(this.data.container[idx], 'unNoticedCount', 0)
+            this.$set(this.data.container[idx], 'list', [])
 
             const url = '/readAll/' + unNoticedIndexes
             const resp = await fetch(url)

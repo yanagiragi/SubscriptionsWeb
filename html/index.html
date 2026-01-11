@@ -50,7 +50,6 @@
         <!-- if mode is "recentRead" -->
         <ul v-if="mode == 'recentRead'" class="collapsible collection" data-collapsible="accordion">
             <li v-for="container in recentRead">
-
                 <div class="collapsible-header" v-on:click="expandSite">
                     <i class="material-icons">filter_drama</i>
                     {{ container.type }} [ {{ container.nickname }} ]
@@ -58,7 +57,6 @@
                         {{ container.list.length }}
                     </span>
                 </div>
-
                 <div class="collapsible-body">
                     <ul class="collection">
                         <li v-for="entry in container.list">
@@ -76,7 +74,6 @@
                                     {{ entry.title }}
                                 </a>
                             </div>
-
                         </li>
                     </ul>
                 </div>
@@ -86,47 +83,49 @@
         <!-- if mode is "showUnNoticedOnly" (Default) -->
         <ul v-if="mode == 'showUnNoticedOnly'" class="collapsible collection" data-collapsible="accordion">
             <li v-for="container in data.container">
-                <div v-if="container.list.filter(x => !x.isnoticed).length > 0" class=" collapsible-header"
+                <<<<<<< HEAD <div v-if="container.list.filter(x => !x.isnoticed).length > 0"
+                    class=" collapsible-header"=======<div
+                    v-if="container.list.filter(x => !x.data.isNoticed).length > 0" class=" collapsible-header">>>>>>>
+                    873b425 (fix: Fix unable to read entries)
                     v-on:click="expandSite">
                     <i class="material-icons">filter_drama</i>
                     {{ data.types[container.typeId] }} [ {{ container.nickname }} ]
                     <span class="badge new">
-                        {{ container.list.length }}
+                        {{ container.list.filter(x => !x.data.isNoticed).length }}
                     </span>
                     <span class="btn btn-small-ex" @click="readAll($event, container.typeId, container.nickname)">
                         read all
                     </span>
-                </div>
-                
-                <div v-if="container.list.filter(x => !x.isnoticed).length > 0" class="collapsible-body">
-                    <ul class="collection">
-                        <li v-for="entry in container.list">
-                            <div v-if="entry.isnoticed == false">
-                                <div class="yrBtn">
-                                    <a class="waves-effect waves-light btn btn-small modal-trigger" href="#"
-                                        @click="read($event, container.typeId, container.nickname, entry.id)">
-                                        read
-                                    </a>
-                                </div>
+    </div>
 
-                                <div class="yrBtn">
-                                    <a v-if="entry.img != 'NULL'"
-                                        class="waves-effect waves-light btn btn-small modal-trigger" href="#modal1"
-                                        @click="previewImg($event, container.typeId, container.nickname, entry.id)">
-                                        preview
-                                    </a>
-                                </div>
+    <div v-if="container.list.filter(x => !x.isnoticed).length > 0" class="collapsible-body">
+        <ul class="collection">
+            <li v-for="entry in container.list">
+                <div v-if="entry.data.isNoticed == false">
+                    <div class="yrBtn">
+                        <a class="waves-effect waves-light btn btn-small modal-trigger" href="#"
+                            @click="read($event, container.typeId, container.nickname, entry.id)">
+                            read
+                        </a>
+                    </div>
 
-                                <a v-bind:href="entry.href" target="_blank" class="collection-item"
-                                    style="margin-left: 30px; display: inline-block">
-                                    {{ entry.title }}
-                                </a>
-                            </div>
-                        </li>
-                    </ul>
+                    <div class="yrBtn">
+                        <a v-if="entry.data.img != 'NULL'" class="waves-effect waves-light btn btn-small modal-trigger"
+                            href="#modal1" @click="previewImg($event, container.typeId, container.nickname, entry.id)">
+                            preview
+                        </a>
+                    </div>
+
+                    <a v-bind:href="entry.data.href" target="_blank" class="collection-item"
+                        style="margin-left: 30px; display: inline-block">
+                        {{ entry.data.title }}
+                    </a>
                 </div>
             </li>
         </ul>
+    </div>
+    </li>
+    </ul>
     </div>
 
     <!-- Materialize is built using jQuery, God Damn it -->
