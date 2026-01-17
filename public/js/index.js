@@ -32,14 +32,7 @@ const vueInstance = new Vue({
             const resp = await fetch(url)
 
             if (resp.ok) {
-                const data = await resp.json()
-
-                for (const key in data.container) {
-                    data.container[key].unNoticedCount = data.container[key].list.length
-                    data.container[key].list = data.container[key].list.sort((_x, _y) => _x.title > _y.title)
-                }
-
-                this.data = data
+                this.data = await resp.json()
 
                 // use css to tell user ajax done
                 document.querySelector('#SiteName').style.color = '#fff'
@@ -51,7 +44,7 @@ const vueInstance = new Vue({
                 console.log('load json error!')
             }
         },
-        read: async function (event, containerIndex, nickname, entryIndex) {
+        read: async function (event, typeId, nickname, entryId) {
             if (event.stopPropagation) { // prevent default action of a
                 event.stopPropagation()
             }
@@ -60,21 +53,22 @@ const vueInstance = new Vue({
                 return
             }
 
-            // use filter to find index, since this.data.container also filtered, only isNoticed === false is left
-            const idx = this.data.container.findIndex(e => e.typeId === containerIndex && e.nickname === nickname)
-            this.data.container[idx].list.filter(e => e.id === entryIndex)[0].isnoticed = true
-            this.data.container[idx].unNoticedCount--
+            const idx = this.data.container.findIndex(e => e.typeId === typeId && e.nickname === nickname)
+            const entry = this.data.container?.[idx]?.list?.filter(e => e.id === entryId)?.[0]
+            if (!entry) {
+                console.log(`Unable to found entry of ${typeId}, ${nickname}, ${entryId} in ${this.data}`)
+                return
+            }
+
+            this.$set(entry.data, 'isNoticed', true)
 
             // add to recentRead
-            const typeId = this.data.container[idx].typeId
-            const entry = this.data.container[idx].list.filter(e => e.id === entryIndex)[0]
             this.addRecentRead(typeId, entry)
 
-            const url = '/read/' + encodeURIComponent(entryIndex)
+            const url = '/read/' + encodeURIComponent(entryId)
             const resp = await fetch(url)
             if (resp.ok) {
                 console.log('succuess')
-                // this.refreshData()
             } else {
                 console.log('failed to read ' + entry.title)
             }
@@ -100,8 +94,8 @@ const vueInstance = new Vue({
             const typeId = this.data.container[idx].typeId
             this.data.container[idx].list.forEach(x => this.addRecentRead(typeId, x))
 
-            this.data.container[idx].unNoticedCount = 0
-            delete this.data.container[idx].list
+            this.$set(this.data.container[idx], 'unNoticedCount', 0)
+            this.$set(this.data.container[idx], 'list', [])
 
             const url = '/readAll/' + unNoticedIndexes
             const resp = await fetch(url)
